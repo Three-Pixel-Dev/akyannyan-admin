@@ -1,25 +1,399 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Card, LogoMark, Metric, PageHeader, Status } from './components/ui';
+import { ToastContainer, showToast } from './components/Toast';
 import { content, metrics, users } from './data/mock';
+import { authService, type AdminUser } from './features/auth/services/auth.service';
+import { SignIn } from './features/auth/SignIn';
+import { MemberLevelsView } from './features/member-levels/MemberLevelsView';
+import { MemberLevelCodesView } from './features/member-levels/MemberLevelCodesView';
+import { UsersView } from './features/users/UsersView';
 
-type View = 'dashboard' | 'users' | 'content' | 'oracle' | 'settings';
-const nav: { id: View; icon: string; label: string }[] = [
-  { id: 'dashboard', icon: '⌂', label: 'အနှစ်ချုပ်' }, { id: 'users', icon: '◉', label: 'အသုံးပြုသူများ' },
-  { id: 'content', icon: '▤', label: 'အကြောင်းအရာ' }, { id: 'oracle', icon: '✦', label: 'Oracle' }, { id: 'settings', icon: '⚙', label: 'ဆက်တင်များ' },
+export type View =
+  | 'dashboard'
+  | 'member-levels'
+  | 'member-level-codes'
+  | 'users'
+  | 'content'
+  | 'oracle'
+  | 'settings';
+
+interface NavItem {
+  id: View;
+  icon: string;
+  label: string;
+  badge?: string;
+}
+
+const nav: NavItem[] = [
+  { id: 'dashboard', icon: '⌂', label: 'အနှစ်ချုပ် (Dashboard)' },
+  { id: 'member-levels', icon: '👑', label: 'အသင်းဝင် အဆင့်များ (Tiers)' },
+  { id: 'member-level-codes', icon: '🎟️', label: 'အဆင့်ကုဒ်များ (Codes)' },
+  { id: 'users', icon: '◉', label: 'အသုံးပြုသူများ (Users)' },
+  { id: 'content', icon: '▤', label: 'အကြောင်းအရာ (Content)' },
+  { id: 'oracle', icon: '✦', label: 'Oracle' },
+  { id: 'settings', icon: '⚙', label: 'ဆက်တင်များ (Settings)' },
 ];
 
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(authService.isAuthenticated());
+  const [currentUser, setCurrentUser] = useState<AdminUser | null>(authService.getUser());
   const [view, setView] = useState<View>('dashboard');
-  return <div className="app-shell"><aside className="sidebar"><div className="brand"><LogoMark/><span><b>အကြံဉာဏ်</b><small>A KYAN NYAN</small></span></div><nav aria-label="Main navigation">{nav.map(item => <button key={item.id} onClick={() => setView(item.id)} className={view === item.id ? 'nav-item active' : 'nav-item'}><span>{item.icon}</span>{item.label}</button>)}</nav><div className="sidebar-bottom"><Card className="support-card"><span>💬</span><p>အကူအညီ လိုအပ်ပါသလား?</p><button>Support ကို ဆက်သွယ်ပါ ›</button></Card><div className="admin-user"><span>✦</span><div><b>Admin</b><small>administrator</small></div></div></div></aside><main><div className="topbar"><button className="mobile-menu" aria-label="Open menu">☰</button><div className="top-actions"><button aria-label="Notifications">◌</button><span className="admin-avatar">A</span></div></div>{view === 'dashboard' ? <Dashboard setView={setView}/> : <Placeholder view={view}/>}</main></div>;
+  const [selectedLevelFilter, setSelectedLevelFilter] = useState<number | undefined>();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleAuthChange = () => {
+      const auth = authService.isAuthenticated();
+      setIsAuthenticated(auth);
+      setCurrentUser(authService.getUser());
+    };
+
+    window.addEventListener('auth-change', handleAuthChange);
+    window.addEventListener('storage', handleAuthChange);
+
+    // Initial session verification
+    if (authService.isAuthenticated()) {
+      authService.fetchCurrentUser().then((user) => {
+        if (user) setCurrentUser(user);
+      });
+    }
+
+    return () => {
+      window.removeEventListener('auth-change', handleAuthChange);
+      window.removeEventListener('storage', handleAuthChange);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    authService.logout();
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+    showToast('အကောင့်မှ အောင်မြင်စွာ ထွက်ပြီးပါပြီ (Signed out).', 'info');
+  };
+
+  const handleNavigateToCodes = (memberLevelId?: number) => {
+    setSelectedLevelFilter(memberLevelId);
+    setView('member-level-codes');
+  };
+
+  // If not authenticated, display the Akyannyan Admin SignIn view
+  if (!isAuthenticated) {
+    return (
+      <>
+        <SignIn onSuccess={() => setIsAuthenticated(true)} />
+        <ToastContainer />
+      </>
+    );
+  }
+
+  return (
+    <div className="app-shell">
+      <ToastContainer />
+
+      {/* Sidebar Navigation */}
+      <aside className={`sidebar ${mobileMenuOpen ? 'open' : ''}`}>
+        <div className="brand">
+          <LogoMark />
+          <div>
+            <b>အကြံဉာဏ်</b>
+            <small>AKYAN NYAN · ADMIN</small>
+          </div>
+        </div>
+
+        <nav aria-label="Main navigation">
+          {nav.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                setView(item.id);
+                setMobileMenuOpen(false);
+              }}
+              className={view === item.id ? 'nav-item active' : 'nav-item'}
+              aria-current={view === item.id ? 'page' : undefined}
+            >
+              <span>{item.icon}</span>
+              {item.label}
+            </button>
+          ))}
+        </nav>
+
+        <div className="sidebar-bottom">
+          <Card className="support-card">
+            <span>💬</span>
+            <p>အကူအညီ လိုအပ်ပါသလား?</p>
+            <button type="button" onClick={() => showToast('Technical Support: support@akyannyan.com', 'info')}>
+              Support ကို ဆက်သွယ်ပါ ›
+            </button>
+          </Card>
+
+          <div className="admin-user">
+            <span>✦</span>
+            <div>
+              <b>{currentUser?.displayName || 'Admin'}</b>
+              <small>{currentUser?.email || 'administrator'}</small>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <main>
+        {/* Topbar */}
+        <header className="topbar">
+          <div className="topbar-left">
+            <button
+              className="mobile-menu"
+              aria-label="Toggle mobile menu"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              ☰
+            </button>
+            <span className="topbar-badge">● System Online</span>
+          </div>
+
+          <div className="top-actions">
+            <div className="user-profile-badge">
+              <span className="admin-avatar">
+                {(currentUser?.displayName || 'A').slice(0, 1).toUpperCase()}
+              </span>
+              <div className="admin-meta">
+                <b>{currentUser?.displayName || 'Admin'}</b>
+                <small>{currentUser?.email || 'admin@akyannyan.com'}</small>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="logout-button"
+              onClick={handleLogout}
+              aria-label="Log out from admin"
+            >
+              🚪 ထွက်မည် (Log Out)
+            </button>
+          </div>
+        </header>
+
+        {/* View Router */}
+        {view === 'dashboard' && <Dashboard setView={setView} />}
+        {view === 'member-levels' && (
+          <MemberLevelsView onNavigateToCodes={handleNavigateToCodes} />
+        )}
+        {view === 'member-level-codes' && (
+          <MemberLevelCodesView initialMemberLevelId={selectedLevelFilter} />
+        )}
+        {view === 'users' && <UsersView />}
+        {view !== 'dashboard' &&
+          view !== 'member-levels' &&
+          view !== 'member-level-codes' &&
+          view !== 'users' && (
+            <Placeholder view={view as Exclude<View, 'dashboard' | 'member-levels' | 'member-level-codes' | 'users'>} />
+          )}
+      </main>
+    </div>
+  );
 }
 
-function Dashboard({ setView }: { setView: (view: View) => void }) { return <div className="page"><PageHeader title="မင်္ဂလာပါ Admin 👋" description="Akyannyan ၏ လုပ်ဆောင်မှုများကို စီမံခန့်ခွဲပြီး အသုံးပြုသူများအတွက် အကောင်းဆုံးအတွေ့အကြုံ ဖန်တီးပါ။" action={<Button onClick={() => setView('content')}>＋ အကြောင်းအရာ အသစ်</Button>}/><div className="metrics">{metrics.map(([icon,label,value,detail]) => <Metric key={label} icon={icon} label={label} value={value} detail={detail}/>)}</div><div className="dashboard-grid"><Card className="wide-card"><div className="card-heading"><div><p className="eyebrow">ဒီအပတ်</p><h2>အသုံးပြုသူ လှုပ်ရှားမှု</h2></div><select aria-label="Date range"><option>လွန်ခဲ့သော ၇ ရက်</option><option>လွန်ခဲ့သော ၃၀ ရက်</option></select></div><div className="chart" aria-label="Weekly activity chart">{[35,48,42,67,55,82,73].map((height,index) => <div className="chart-bar" key={height}><i style={{ height: `${height}%` }}/><span>{['တန','လာ','ဂါ','ဗုဒ္ဓ','ကြာ','သော','စနေ'][index]}</span></div>)}</div><div className="chart-legend"><span><i className="dot jade"/>Active users</span><span><i className="dot gold"/>Oracle questions</span></div></Card><Card className="ritual-card"><span className="ritual-icon">🏺</span><p className="eyebrow">DAILY RITUAL</p><h2>ကံစုဘူး</h2><strong>74%</strong><p>ယနေ့ ကုသိုလ်အလေ့အကျင့် ပြီးစီးမှု</p><div className="progress"><i/></div><span className="hint">1,846 / 2,494 users</span></Card><Card className="wide-card table-card"><div className="card-heading"><div><p className="eyebrow">RECENTLY ACTIVE</p><h2>အသုံးပြုသူအသစ်များ</h2></div><button className="link-button" onClick={() => setView('users')}>အားလုံးကြည့်ရန် ›</button></div><div className="table">{users.map(([name,detail,plan,last]) => <div className="table-row" key={name}><span className="person-avatar">{name.slice(0,1)}</span><div className="user-detail"><b>{name}</b><small>{detail}</small></div><Status tone={plan === 'Premium' ? 'gold' : 'jade'}>{plan}</Status><time>{last}</time></div>)}</div></Card><Card className="quick-card"><p className="eyebrow">QUICK ACTIONS</p><h2>အမြန် လုပ်ဆောင်ရန်</h2>{[['☀','နေ့စဉ် ကံဇာတာ ပြင်မည်'],['📿','ဂါထာ အသစ် ထည့်မည်'],['🎴','Tarot deck စီမံမည်']].map(([icon,label]) => <button key={label} className="quick-action"><span>{icon}</span>{label}<b>›</b></button>)}</Card></div></div>; }
+function Dashboard({ setView }: { setView: (view: View) => void }) {
+  return (
+    <div className="page">
+      <PageHeader
+        title="မင်္ဂလာပါ Admin 👋"
+        description="Akyannyan ၏ အသင်းဝင်အဆင့်များ၊ ဘောက်ချာကုဒ်များနှင့် ဗေဒင်/ဇာတာ ဝန်ဆောင်မှုများကို စီမံခန့်ခွဲပါ။"
+        action={
+          <div className="header-action-group">
+            <Button onClick={() => setView('member-level-codes')} variant="gold">
+              ⚡ ကုဒ်ထုတ်မည်
+            </Button>
+            <Button onClick={() => setView('member-levels')} variant="jade">
+              👑 အသင်းဝင် အဆင့်များ
+            </Button>
+          </div>
+        }
+      />
 
-function Placeholder({ view }: { view: Exclude<View, 'dashboard'> }) { const [search, setSearch] = useState(''); const data = view === 'content' ? content : users; const config: Record<typeof view, [string, string, string]> = { users: ['အသုံးပြုသူများ', 'အသုံးပြုသူများနှင့် Premium အခြေအနေများကို စီမံပါ။', '＋ အသုံးပြုသူ ထည့်မည်'], content: ['အကြောင်းအရာ စီမံခန့်ခွဲမှု', 'ကံဇာတာ၊ ဂါထာနှင့် ဗဟုသုတ အကြောင်းအရာများကို စီမံပါ။', '＋ အကြောင်းအရာ အသစ်'], oracle: ['Oracle', 'Oracle response templates နှင့် context policy များကို ပြင်ဆင်ပါ။', '＋ Template အသစ်'], settings: ['ဆက်တင်များ', 'Akyannyan platform အတွက် အခြေခံဆက်တင်များ။', 'ပြောင်းလဲမှု သိမ်းမည်'] }; const [title,description,action] = config[view]; return <div className="page"><PageHeader title={title} description={description} action={<Button>{action}</Button>}/>{view === 'oracle' || view === 'settings' ? <SettingsView view={view}/> : <Card className="resource-card"><div className="toolbar"><input value={search} onChange={event => setSearch(event.target.value)} placeholder="ရှာဖွေရန်..." aria-label="Search"/><button className="filter" type="button" aria-label="Filter">
+      <div className="metrics">
+        {metrics.map(([icon, label, value, detail]) => (
+          <Metric key={label} icon={icon} label={label} value={value} detail={detail} />
+        ))}
+      </div>
+
+      <div className="dashboard-grid">
+        <Card className="wide-card">
+          <div className="card-heading">
+            <div>
+              <p className="eyebrow">ဒီအပတ်</p>
+              <h2>အသုံးပြုသူ လှုပ်ရှားမှု</h2>
+            </div>
+            <select aria-label="Date range">
+              <option>လွန်ခဲ့သော ၇ ရက်</option>
+              <option>လွန်ခဲ့သော ၃၀ ရက်</option>
+            </select>
+          </div>
+          <div className="chart" aria-label="Weekly activity chart">
+            {[35, 48, 42, 67, 55, 82, 73].map((height, index) => (
+              <div className="chart-bar" key={height}>
+                <i style={{ height: `${height}%` }} />
+                <span>{['တန', 'လာ', 'ဂါ', 'ဗုဒ္ဓ', 'ကြာ', 'သော', 'စနေ'][index]}</span>
+              </div>
+            ))}
+          </div>
+          <div className="chart-legend">
+            <span><i className="dot jade" />Active users</span>
+            <span><i className="dot gold" />Oracle questions</span>
+          </div>
+        </Card>
+
+        <Card className="ritual-card">
+          <span className="ritual-icon">🏺</span>
+          <p className="eyebrow">DAILY RITUAL</p>
+          <h2>ကံစုဘူး</h2>
+          <strong>74%</strong>
+          <p>ယနေ့ ကုသိုလ်အလေ့အကျင့် ပြီးစီးမှု</p>
+          <div className="progress">
+            <i />
+          </div>
+          <span className="hint">1,846 / 2,494 users</span>
+        </Card>
+
+        <Card className="wide-card table-card">
+          <div className="card-heading">
+            <div>
+              <p className="eyebrow">RECENTLY ACTIVE</p>
+              <h2>အသုံးပြုသူအသစ်များ</h2>
+            </div>
+            <button className="link-button" onClick={() => setView('users')}>
+              အားလုံးကြည့်ရန် ›
+            </button>
+          </div>
+          <div className="table">
+            {users.map(([name, detail, plan, last]) => (
+              <div className="table-row" key={name}>
+                <span className="person-avatar">{name.slice(0, 1)}</span>
+                <div className="user-detail">
+                  <b>{name}</b>
+                  <small>{detail}</small>
+                </div>
+                <Status tone={plan === 'Premium' ? 'gold' : 'jade'}>{plan}</Status>
+                <time>{last}</time>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card className="quick-card">
+          <p className="eyebrow">QUICK ACTIONS</p>
+          <h2>အမြန် လုပ်ဆောင်ရန်</h2>
+          {[
+            ['👑', 'အသင်းဝင် အဆင့် စီမံမည်', () => setView('member-levels')],
+            ['🎟️', 'Voucher Code အသစ် ထုတ်မည်', () => setView('member-level-codes')],
+            ['☀', 'နေ့စဉ် ကံဇာတာ ပြင်မည်', () => setView('content')],
+          ].map(([icon, label, action]) => (
+            <button
+              key={label as string}
+              className="quick-action"
+              onClick={action as () => void}
+            >
+              <span>{icon as string}</span>
+              {label as string}
+              <b>›</b>
+            </button>
+          ))}
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function Placeholder({ view }: { view: 'users' | 'content' | 'oracle' | 'settings' }) {
+  const [search, setSearch] = useState('');
+  const data = view === 'content' ? content : users;
+  const config: Record<typeof view, [string, string, string]> = {
+    users: ['အသုံးပြုသူများ', 'အသုံးပြုသူများနှင့် Premium အခြေအနေများကို စီမံပါ။', '＋ အသုံးပြုသူ ထည့်မည်'],
+    content: ['အကြောင်းအရာ စီမံခန့်ခွဲမှု', 'ကံဇာတာ၊ ဂါထာနှင့် ဗဟုသုတ အကြောင်းအရာများကို စီမံပါ။', '＋ အကြောင်းအရာ အသစ်'],
+    oracle: ['Oracle', 'Oracle response templates နှင့် context policy များကို ပြင်ဆင်ပါ။', '＋ Template အသစ်'],
+    settings: ['ဆက်တင်များ', 'Akyannyan platform အတွက် အခြေခံဆက်တင်များ။', 'ပြောင်းလဲမှု သိမ်းမည်'],
+  };
+  const [title, description, action] = config[view];
+
+  return (
+    <div className="page">
+      <PageHeader
+        title={title}
+        description={description}
+        action={<Button onClick={() => showToast(`Opening ${action}...`, 'info')}>{action}</Button>}
+      />
+      {view === 'oracle' || view === 'settings' ? (
+        <SettingsView view={view} />
+      ) : (
+        <Card className="resource-card">
+          <div className="toolbar">
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="ရှာဖွေရန်..."
+              aria-label="Search"
+            />
+            <button className="filter" type="button" aria-label="Filter">
               <svg className="filter-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path fill="currentColor" d="M4.25 6.5A.75.75 0 0 1 5 5.75h14a.75.75 0 0 1 .53 1.28l-5.28 5.28v4.19a.75.75 0 0 1-1.12.65l-2.5-1.43a.75.75 0 0 1-.38-.65v-2.76L4.72 7.03a.75.75 0 0 1-.47-1.53Z"/>
+                <path
+                  fill="currentColor"
+                  d="M4.25 6.5A.75.75 0 0 1 5 5.75h14a.75.75 0 0 1 .53 1.28l-5.28 5.28v4.19a.75.75 0 0 1-1.12.65l-2.5-1.43a.75.75 0 0 1-.38-.65v-2.76L4.72 7.03a.75.75 0 0 1-.47-1.53Z"
+                />
               </svg>
               Filter
-            </button></div><div className="resource-list">{data.filter(row => row.join(' ').includes(search)).map(row => <div className="resource-row" key={row[0]}><div><b>{row[0]}</b><small>{row[1]}</small></div><Status tone={row[2] === 'Draft' || row[2] === 'Premium' ? 'gold' : 'jade'}>{row[2]}</Status><time>{row[3]}</time><button aria-label={`Edit ${row[0]}`}>⋯</button></div>)}</div></Card>}</div>; }
+            </button>
+          </div>
+          <div className="resource-list">
+            {data
+              .filter((row) => row.join(' ').includes(search))
+              .map((row) => (
+                <div className="resource-row" key={row[0]}>
+                  <div>
+                    <b>{row[0]}</b>
+                    <small>{row[1]}</small>
+                  </div>
+                  <Status tone={row[2] === 'Draft' || row[2] === 'Premium' ? 'gold' : 'jade'}>
+                    {row[2]}
+                  </Status>
+                  <time>{row[3]}</time>
+                  <button aria-label={`Edit ${row[0]}`}>⋯</button>
+                </div>
+              ))}
+          </div>
+        </Card>
+      )}
+    </div>
+  );
+}
 
-function SettingsView({ view }: { view: 'oracle' | 'settings' }) { const entries = view === 'oracle' ? [['✦','Oracle system prompt','သင့်ဇာတာနှင့် ချိတ်ဆက်ထားသော အကြံပြုချက်များ'],['◌','Daily quota','Free users အတွက် 3 questions / day'],['☷','Safety policy','Sensitive topics response boundaries']] : [['⚙','General settings','Brand name, contact channel and locale'],['👑','Premium settings','Plans, access codes and entitlement rules'],['🔔','Notification settings','Daily ritual and reading delivery schedule']]; return <div className="setting-list">{entries.map(([icon,title,detail]) => <Card key={title} className="admin-setting"><span>{icon}</span><div><b>{title}</b><small>{detail}</small></div><button>ပြင်မည် ›</button></Card>)}</div>; }
+function SettingsView({ view }: { view: 'oracle' | 'settings' }) {
+  const entries =
+    view === 'oracle'
+      ? [
+          ['✦', 'Oracle system prompt', 'သင့်ဇာတာနှင့် ချိတ်ဆက်ထားသော အကြံပြုချက်များ'],
+          ['◌', 'Daily quota', 'Free users အတွက် 3 questions / day'],
+          ['☷', 'Safety policy', 'Sensitive topics response boundaries'],
+        ]
+      : [
+          ['⚙', 'General settings', 'Brand name, contact channel and locale'],
+          ['👑', 'Premium settings', 'Plans, access codes and entitlement rules'],
+          ['🔔', 'Notification settings', 'Daily ritual and reading delivery schedule'],
+        ];
+
+  return (
+    <div className="setting-list">
+      {entries.map(([icon, title, detail]) => (
+        <Card key={title} className="admin-setting">
+          <span>{icon}</span>
+          <div>
+            <b>{title}</b>
+            <small>{detail}</small>
+          </div>
+          <button onClick={() => showToast(`Setting '${title}' updated`, 'info')}>
+            ပြင်မည် ›
+          </button>
+        </Card>
+      ))}
+    </div>
+  );
+}
