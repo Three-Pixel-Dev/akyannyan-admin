@@ -1,6 +1,6 @@
 # Akyannyan Admin — Frontend UI Implementation Guidelines for AI Agents
 
-> **Mandatory Source of Truth**: All AI agents and developers implementing UI features in `akyannyan-admin` MUST follow the design patterns, design tokens, Burmese text copy, and component structures defined in [`reference/akn.tsx`](file:///home/square/Documents/freelance/akyn/reference/akn.tsx) and `akyannyan-admin/src/styles.css`.
+> **Mandatory Source of Truth**: All AI agents and developers implementing UI features in `akyannyan-admin` MUST follow the design patterns, design tokens, Burmese text copy, and component structures defined in [`reference/akn.tsx`](file:///home/square/Documents/freelance/akyn/akyannyan-mobile/reference/akn.tsx) and `akyannyan-admin/src/styles.css`.
 >
 > **Rule Maintenance & Scope Extension**: If a new feature introduces admin views, data tables, or management controls outside the current scope of this document, AI agents **MUST** update and extend this rule document (`frontend_rule.md`) with the new specifications before or during feature implementation.
 
