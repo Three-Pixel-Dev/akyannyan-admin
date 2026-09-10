@@ -7,11 +7,18 @@ import { SignIn } from './features/auth/SignIn';
 import { MemberLevelsView } from './features/member-levels/MemberLevelsView';
 import { MemberLevelCodesView } from './features/member-levels/MemberLevelCodesView';
 import { UsersView } from './features/users/UsersView';
+import { PointsConfigsView } from './features/points/PointsConfigsView';
+import { TopupCodesView } from './features/points/TopupCodesView';
+import { PointsLedgerView } from './features/points/PointsLedgerView';
+import { OracleView } from './features/oracle/OracleView';
 
 export type View =
   | 'dashboard'
   | 'member-levels'
   | 'member-level-codes'
+  | 'points-configs'
+  | 'topup-codes'
+  | 'points-ledger'
   | 'users'
   | 'content'
   | 'oracle'
@@ -28,18 +35,76 @@ const nav: NavItem[] = [
   { id: 'dashboard', icon: '⌂', label: 'အနှစ်ချုပ် (Dashboard)' },
   { id: 'member-levels', icon: '👑', label: 'အသင်းဝင် အဆင့်များ (Tiers)' },
   { id: 'member-level-codes', icon: '🎟️', label: 'အဆင့်ကုဒ်များ (Codes)' },
+  { id: 'points-configs', icon: '⚙️', label: 'အမှတ်နှုန်းထားများ (Pricing)' },
+  { id: 'topup-codes', icon: '🎫', label: 'အမှတ်ဘောက်ချာများ (Top-up Codes)' },
+  { id: 'points-ledger', icon: '📜', label: 'အမှတ်စာရင်း (Ledger)' },
   { id: 'users', icon: '◉', label: 'အသုံးပြုသူများ (Users)' },
   { id: 'content', icon: '▤', label: 'အကြောင်းအရာ (Content)' },
   { id: 'oracle', icon: '✦', label: 'Oracle' },
   { id: 'settings', icon: '⚙', label: 'ဆက်တင်များ (Settings)' },
 ];
 
+const VALID_VIEWS: View[] = [
+  'dashboard',
+  'member-levels',
+  'member-level-codes',
+  'points-configs',
+  'topup-codes',
+  'points-ledger',
+  'users',
+  'content',
+  'oracle',
+  'settings',
+];
+
+function getViewFromPath(): View {
+  if (typeof window === 'undefined') return 'dashboard';
+  const rawPath = window.location.pathname.replace(/^\/+/, '').split('/')[0];
+  if (rawPath === '' || rawPath === 'dashboard') {
+    return 'dashboard';
+  }
+  if (VALID_VIEWS.includes(rawPath as View)) {
+    return rawPath as View;
+  }
+  return 'dashboard';
+}
+
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(authService.isAuthenticated());
   const [currentUser, setCurrentUser] = useState<AdminUser | null>(authService.getUser());
-  const [view, setView] = useState<View>('dashboard');
+  const [view, setViewState] = useState<View>(() => getViewFromPath());
   const [selectedLevelFilter, setSelectedLevelFilter] = useState<number | undefined>();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const navigateToView = (nextView: View, replace = false) => {
+    setViewState(nextView);
+    const targetPath = nextView === 'dashboard' ? '/' : `/${nextView}`;
+    if (window.location.pathname !== targetPath) {
+      if (replace) {
+        window.history.replaceState(null, '', targetPath);
+      } else {
+        window.history.pushState(null, '', targetPath);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setViewState(getViewFromPath());
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  useEffect(() => {
+    // If user is at a valid subpath on initial load, ensure URL is cleanly aligned
+    const currentView = getViewFromPath();
+    const expectedPath = currentView === 'dashboard' ? '/' : `/${currentView}`;
+    if (window.location.pathname !== expectedPath && window.location.pathname !== '/dashboard') {
+      window.history.replaceState(null, '', expectedPath);
+    }
+  }, []);
 
   useEffect(() => {
     const handleAuthChange = () => {
@@ -73,7 +138,7 @@ export default function App() {
 
   const handleNavigateToCodes = (memberLevelId?: number) => {
     setSelectedLevelFilter(memberLevelId);
-    setView('member-level-codes');
+    navigateToView('member-level-codes');
   };
 
   // If not authenticated, display the Akyannyan Admin SignIn view
@@ -105,7 +170,7 @@ export default function App() {
             <button
               key={item.id}
               onClick={() => {
-                setView(item.id);
+                navigateToView(item.id);
                 setMobileMenuOpen(false);
               }}
               className={view === item.id ? 'nav-item active' : 'nav-item'}
@@ -174,19 +239,27 @@ export default function App() {
         </header>
 
         {/* View Router */}
-        {view === 'dashboard' && <Dashboard setView={setView} />}
+        {view === 'dashboard' && <Dashboard setView={navigateToView} />}
         {view === 'member-levels' && (
           <MemberLevelsView onNavigateToCodes={handleNavigateToCodes} />
         )}
         {view === 'member-level-codes' && (
           <MemberLevelCodesView initialMemberLevelId={selectedLevelFilter} />
         )}
+        {view === 'points-configs' && <PointsConfigsView />}
+        {view === 'topup-codes' && <TopupCodesView />}
+        {view === 'points-ledger' && <PointsLedgerView />}
         {view === 'users' && <UsersView />}
+        {view === 'oracle' && <OracleView />}
         {view !== 'dashboard' &&
           view !== 'member-levels' &&
           view !== 'member-level-codes' &&
-          view !== 'users' && (
-            <Placeholder view={view as Exclude<View, 'dashboard' | 'member-levels' | 'member-level-codes' | 'users'>} />
+          view !== 'points-configs' &&
+          view !== 'topup-codes' &&
+          view !== 'points-ledger' &&
+          view !== 'users' &&
+          view !== 'oracle' && (
+            <Placeholder view={view as Exclude<View, 'dashboard' | 'member-levels' | 'member-level-codes' | 'points-configs' | 'topup-codes' | 'points-ledger' | 'users' | 'oracle'>} />
           )}
       </main>
     </div>
@@ -371,13 +444,13 @@ function SettingsView({ view }: { view: 'oracle' | 'settings' }) {
     view === 'oracle'
       ? [
           ['✦', 'Oracle system prompt', 'သင့်ဇာတာနှင့် ချိတ်ဆက်ထားသော အကြံပြုချက်များ'],
-          ['◌', 'Daily quota', 'Free users အတွက် 3 questions / day'],
-          ['☷', 'Safety policy', 'Sensitive topics response boundaries'],
+          ['🪙', 'Daily quota', 'Free users အတွက် 3 questions / day'],
+          ['🛡️', 'Safety policy', 'Sensitive topics response boundaries'],
         ]
       : [
-          ['⚙', 'General settings', 'Brand name, contact channel and locale'],
-          ['👑', 'Premium settings', 'Plans, access codes and entitlement rules'],
-          ['🔔', 'Notification settings', 'Daily ritual and reading delivery schedule'],
+          ['⚙', 'General platform settings', 'Brand name, contact channel, support email and locale'],
+          ['👑', 'Premium membership settings', 'Plans, access codes and entitlement rules'],
+          ['🔔', 'Notification settings', 'Daily ritual reminders and reading delivery schedule'],
         ];
 
   return (
@@ -389,9 +462,13 @@ function SettingsView({ view }: { view: 'oracle' | 'settings' }) {
             <b>{title}</b>
             <small>{detail}</small>
           </div>
-          <button onClick={() => showToast(`Setting '${title}' updated`, 'info')}>
-            ပြင်မည် ›
-          </button>
+          <Button
+            variant="ghost"
+            onClick={() => showToast(`Setting '${title}' updated`, 'info')}
+            style={{ padding: '8px 16px' }}
+          >
+            ✏️ ပြင်မည်
+          </Button>
         </Card>
       ))}
     </div>
