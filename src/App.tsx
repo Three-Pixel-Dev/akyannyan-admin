@@ -11,6 +11,8 @@ import { PointsConfigsView } from './features/points/PointsConfigsView';
 import { TopupCodesView } from './features/points/TopupCodesView';
 import { PointsLedgerView } from './features/points/PointsLedgerView';
 import { OracleView } from './features/oracle/OracleView';
+import { ContentView } from './features/content/ContentView';
+import { SettingsView } from './features/settings/SettingsView';
 
 export type View =
   | 'dashboard'
@@ -251,16 +253,8 @@ export default function App() {
         {view === 'points-ledger' && <PointsLedgerView />}
         {view === 'users' && <UsersView />}
         {view === 'oracle' && <OracleView />}
-        {view !== 'dashboard' &&
-          view !== 'member-levels' &&
-          view !== 'member-level-codes' &&
-          view !== 'points-configs' &&
-          view !== 'topup-codes' &&
-          view !== 'points-ledger' &&
-          view !== 'users' &&
-          view !== 'oracle' && (
-            <Placeholder view={view as Exclude<View, 'dashboard' | 'member-levels' | 'member-level-codes' | 'points-configs' | 'topup-codes' | 'points-ledger' | 'users' | 'oracle'>} />
-          )}
+        {view === 'content' && <ContentView />}
+        {view === 'settings' && <SettingsView />}
       </main>
     </div>
   );
@@ -377,100 +371,3 @@ function Dashboard({ setView }: { setView: (view: View) => void }) {
   );
 }
 
-function Placeholder({ view }: { view: 'users' | 'content' | 'oracle' | 'settings' }) {
-  const [search, setSearch] = useState('');
-  const data = view === 'content' ? content : users;
-  const config: Record<typeof view, [string, string, string]> = {
-    users: ['အသုံးပြုသူများ', 'အသုံးပြုသူများနှင့် Premium အခြေအနေများကို စီမံပါ။', '＋ အသုံးပြုသူ ထည့်မည်'],
-    content: ['အကြောင်းအရာ စီမံခန့်ခွဲမှု', 'ကံဇာတာ၊ ဂါထာနှင့် ဗဟုသုတ အကြောင်းအရာများကို စီမံပါ။', '＋ အကြောင်းအရာ အသစ်'],
-    oracle: ['Oracle', 'Oracle response templates နှင့် context policy များကို ပြင်ဆင်ပါ။', '＋ Template အသစ်'],
-    settings: ['ဆက်တင်များ', 'Akyannyan platform အတွက် အခြေခံဆက်တင်များ။', 'ပြောင်းလဲမှု သိမ်းမည်'],
-  };
-  const [title, description, action] = config[view];
-
-  return (
-    <div className="page">
-      <PageHeader
-        title={title}
-        description={description}
-        action={<Button onClick={() => showToast(`Opening ${action}...`, 'info')}>{action}</Button>}
-      />
-      {view === 'oracle' || view === 'settings' ? (
-        <SettingsView view={view} />
-      ) : (
-        <Card className="resource-card">
-          <div className="toolbar">
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="ရှာဖွေရန်..."
-              aria-label="Search"
-            />
-            <button className="filter" type="button" aria-label="Filter">
-              <svg className="filter-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path
-                  fill="currentColor"
-                  d="M4.25 6.5A.75.75 0 0 1 5 5.75h14a.75.75 0 0 1 .53 1.28l-5.28 5.28v4.19a.75.75 0 0 1-1.12.65l-2.5-1.43a.75.75 0 0 1-.38-.65v-2.76L4.72 7.03a.75.75 0 0 1-.47-1.53Z"
-                />
-              </svg>
-              Filter
-            </button>
-          </div>
-          <div className="resource-list">
-            {data
-              .filter((row) => row.join(' ').includes(search))
-              .map((row) => (
-                <div className="resource-row" key={row[0]}>
-                  <div>
-                    <b>{row[0]}</b>
-                    <small>{row[1]}</small>
-                  </div>
-                  <Status tone={row[2] === 'Draft' || row[2] === 'Premium' ? 'gold' : 'jade'}>
-                    {row[2]}
-                  </Status>
-                  <time>{row[3]}</time>
-                  <button aria-label={`Edit ${row[0]}`}>⋯</button>
-                </div>
-              ))}
-          </div>
-        </Card>
-      )}
-    </div>
-  );
-}
-
-function SettingsView({ view }: { view: 'oracle' | 'settings' }) {
-  const entries =
-    view === 'oracle'
-      ? [
-          ['✦', 'Oracle system prompt', 'သင့်ဇာတာနှင့် ချိတ်ဆက်ထားသော အကြံပြုချက်များ'],
-          ['🪙', 'Daily quota', 'Free users အတွက် 3 questions / day'],
-          ['🛡️', 'Safety policy', 'Sensitive topics response boundaries'],
-        ]
-      : [
-          ['⚙', 'General platform settings', 'Brand name, contact channel, support email and locale'],
-          ['👑', 'Premium membership settings', 'Plans, access codes and entitlement rules'],
-          ['🔔', 'Notification settings', 'Daily ritual reminders and reading delivery schedule'],
-        ];
-
-  return (
-    <div className="setting-list">
-      {entries.map(([icon, title, detail]) => (
-        <Card key={title} className="admin-setting">
-          <span>{icon}</span>
-          <div>
-            <b>{title}</b>
-            <small>{detail}</small>
-          </div>
-          <Button
-            variant="ghost"
-            onClick={() => showToast(`Setting '${title}' updated`, 'info')}
-            style={{ padding: '8px 16px' }}
-          >
-            ✏️ ပြင်မည်
-          </Button>
-        </Card>
-      ))}
-    </div>
-  );
-}
