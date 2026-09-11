@@ -265,17 +265,25 @@ export function TopupCodesView() {
                       {item.status === 'EXPIRED' && <Status tone="danger">⏳ EXPIRED</Status>}
                     </td>
                     <td>
-                      {item.redeemedByUsername || item.redeemedByUserId ? (
+                      {item.assignedUserDisplayName || item.redeemedByUsername || item.assignedUserId || item.redeemedByUserId ? (
                         <div className="redeemed-user-info">
-                          <b>{item.redeemedByUsername || `User #${item.redeemedByUserId}`}</b>
-                          <small>{formatDate(item.redeemedAt)}</small>
+                          <b>
+                            {item.assignedUserDisplayName ||
+                              item.redeemedByUsername ||
+                              `User #${item.assignedUserId || item.redeemedByUserId}`}
+                          </b>
+                          {(item.activatedAt || item.redeemedAt) && (
+                            <small>{formatDate(item.activatedAt || item.redeemedAt)}</small>
+                          )}
                         </div>
                       ) : (
                         <span style={{ color: 'var(--text-muted)' }}>—</span>
                       )}
                     </td>
                     <td>
-                      <small style={{ color: 'var(--text-muted)' }}>{formatDate(item.expiresAt)}</small>
+                      <small style={{ color: 'var(--text-muted)' }}>
+                        {formatDate(item.expiredAt || item.expiresAt)}
+                      </small>
                     </td>
                     <td className="text-right">
                       {item.status === 'ACTIVE' && (

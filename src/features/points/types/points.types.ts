@@ -22,9 +22,13 @@ export interface TopupCode {
   points: number;
   status: 'ACTIVE' | 'REDEEMED' | 'EXPIRED';
   expiresAt?: string;
+  expiredAt?: string;
   redeemedByUserId?: number;
+  assignedUserId?: number;
   redeemedByUsername?: string;
+  assignedUserDisplayName?: string;
   redeemedAt?: string;
+  activatedAt?: string;
   createdAt: string;
 }
 
