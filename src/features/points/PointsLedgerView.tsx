@@ -22,13 +22,19 @@ export function PointsLedgerView() {
   const [adjustNote, setAdjustNote] = useState<string>('');
   const [adjusting, setAdjusting] = useState(false);
 
+  const getTxType = (tx: PointsTransaction): PointTransactionType =>
+    (tx.transactionType || tx.source || 'TOP_UP') as PointTransactionType;
+
+  const getTxAmount = (tx: PointsTransaction): number =>
+    tx.pointsAmount !== undefined ? tx.pointsAmount : (tx.amount ?? 0);
+
   const fetchTransactions = async () => {
     setLoading(true);
     try {
       const data = await adminPointsService.getTransactions(page, size);
       let list = data.content || [];
       if (typeFilter !== 'ALL') {
-        list = list.filter((t) => t.transactionType === typeFilter);
+        list = list.filter((t) => getTxType(t) === typeFilter);
       }
       setTransactions(list);
       setTotalPages(data.totalPages || 1);
@@ -117,9 +123,9 @@ export function PointsLedgerView() {
     }
   };
 
-  const deductCount = transactions.filter((t) => t.transactionType === 'STAGE_DEDUCT').length;
-  const topupCount = transactions.filter((t) => t.transactionType === 'TOP_UP').length;
-  const adjustCount = transactions.filter((t) => t.transactionType === 'ADMIN_ADJUST').length;
+  const deductCount = transactions.filter((t) => getTxType(t) === 'STAGE_DEDUCT').length;
+  const topupCount = transactions.filter((t) => getTxType(t) === 'TOP_UP').length;
+  const adjustCount = transactions.filter((t) => getTxType(t) === 'ADMIN_ADJUST').length;
 
   return (
     <div className="page">
@@ -211,7 +217,10 @@ export function PointsLedgerView() {
               </thead>
               <tbody>
                 {transactions.map((tx) => {
-                  const isPositive = tx.pointsAmount > 0;
+                  const amt = getTxAmount(tx);
+                  const isPositive = amt > 0;
+                  const txType = getTxType(tx);
+                  const featureOrRef = tx.featureName || tx.referenceId || tx.stageId;
                   return (
                     <tr key={tx.id}>
                       <td>
@@ -221,7 +230,7 @@ export function PointsLedgerView() {
                         <b>{tx.userDisplayName || `User #${tx.userId}`}</b>
                         {tx.userEmail && <small style={{ display: 'block', color: 'var(--text-muted)' }}>{tx.userEmail}</small>}
                       </td>
-                      <td>{renderTypeStatus(tx.transactionType)}</td>
+                      <td>{renderTypeStatus(txType)}</td>
                       <td>
                         <span
                           style={{
@@ -230,20 +239,22 @@ export function PointsLedgerView() {
                             color: isPositive ? 'var(--jade, #3ecf74)' : 'var(--danger, #e86a5d)',
                           }}
                         >
-                          {isPositive ? `+${tx.pointsAmount}` : tx.pointsAmount} pts
+                          {isPositive ? `+${amt}` : amt} pts
                         </span>
                       </td>
                       <td>
-                        {tx.featureName ? (
-                          <span className="tier-tag">{tx.featureName}</span>
-                        ) : tx.stageId ? (
-                          <code className="code-pill">{tx.stageId}</code>
+                        {featureOrRef ? (
+                          <code className="code-pill">{featureOrRef}</code>
                         ) : (
                           <span style={{ color: 'var(--text-muted)' }}>—</span>
                         )}
                       </td>
                       <td>
-                        <b style={{ color: 'var(--gold, #e8b54d)' }}>{tx.balanceAfter} pts</b>
+                        {tx.balanceAfter !== undefined && tx.balanceAfter !== null ? (
+                          <b style={{ color: 'var(--gold, #e8b54d)' }}>{tx.balanceAfter} pts</b>
+                        ) : (
+                          <span style={{ color: 'var(--text-muted)' }}>—</span>
+                        )}
                       </td>
                       <td>
                         <small style={{ color: 'var(--text-muted)' }}>{tx.note || '—'}</small>

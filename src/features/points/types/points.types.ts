@@ -50,11 +50,14 @@ export interface PointsTransaction {
   userEmail?: string;
   stageId?: string;
   featureName?: string;
-  transactionType: PointTransactionType;
-  pointsAmount: number;
-  packagePointsDelta: number;
-  topupPointsDelta: number;
-  balanceAfter: number;
+  referenceId?: string;
+  source?: PointTransactionType | string;
+  transactionType?: PointTransactionType | string;
+  amount?: number;
+  pointsAmount?: number;
+  packagePointsDelta?: number;
+  topupPointsDelta?: number;
+  balanceAfter?: number;
   note?: string;
   createdAt: string;
 }

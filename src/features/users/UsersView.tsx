@@ -223,6 +223,49 @@ export function UsersView() {
     }
   };
 
+  const BURMESE_MONTHS_MAP: Record<number, string> = {
+    1: 'ဇန်နဝါရီ',
+    2: 'ဖေဖော်ဝါရီ',
+    3: 'မတ်',
+    4: 'ဧပြီ',
+    5: 'မေ',
+    6: 'ဇွန်',
+    7: 'ဇူလိုင်',
+    8: 'ဩဂုတ်',
+    9: 'စက်တင်ဘာ',
+    10: 'အောက်တိုဘာ',
+    11: 'နိုဝင်ဘာ',
+    12: 'ဒီဇင်ဘာ',
+  };
+
+  const formatBirthDate = (user: User) => {
+    if (user.birthYear && user.birthMonth && user.birthDay) {
+      const monthName = BURMESE_MONTHS_MAP[user.birthMonth] || `${user.birthMonth} လ`;
+      return `${user.birthDay} ${monthName} ${user.birthYear} (${user.birthDay}/${user.birthMonth}/${user.birthYear})`;
+    }
+    if (user.birthDate) {
+      return user.birthDate;
+    }
+    return 'မသတ်မှတ်ရသေးပါ (Not set)';
+  };
+
+  const formatBirthTime = (user: User) => {
+    if (user.birthTimeUnknown) {
+      return 'မွေးချိန်မသိပါ (Unknown)';
+    }
+    if (user.birthHour !== undefined && user.birthMinute !== undefined) {
+      const h = user.birthHour;
+      const m = user.birthMinute.toString().padStart(2, '0');
+      const ap = h >= 12 ? 'PM' : 'AM';
+      const h12 = h % 12 === 0 ? 12 : h % 12;
+      return `${h12}:${m} ${ap} (${h.toString().padStart(2, '0')}:${m})`;
+    }
+    if (user.birthTime) {
+      return user.birthTime;
+    }
+    return '—';
+  };
+
   return (
     <div className="page">
       <PageHeader
@@ -853,6 +896,28 @@ export function UsersView() {
                 <div className="detail-item">
                   <span>Status:</span>
                   <b>{viewingUser.active ? 'Active' : 'Inactive'}</b>
+                </div>
+                <div className="detail-item">
+                  <span>မွေးသက္ကရာဇ် (Date of Birth):</span>
+                  <b className={viewingUser.birthYear ? 'text-jade' : 'text-muted'}>
+                    {formatBirthDate(viewingUser)}
+                  </b>
+                </div>
+                <div className="detail-item">
+                  <span>မွေးချိန် (Birth Time):</span>
+                  <b>{formatBirthTime(viewingUser)}</b>
+                </div>
+                <div className="detail-item">
+                  <span>မွေးနံ (Day Sign):</span>
+                  <b>{viewingUser.daySign ? `🪐 ${viewingUser.daySign}` : '—'}</b>
+                </div>
+                <div className="detail-item">
+                  <span>ကျား / မ (Gender):</span>
+                  <b>{viewingUser.gender || '—'}</b>
+                </div>
+                <div className="detail-item">
+                  <span>မွေးရပ်ဒေသ (Birth Place):</span>
+                  <b>{viewingUser.birthPlace || '—'}</b>
                 </div>
                 <div className="detail-item">
                   <span>Premium Expires:</span>

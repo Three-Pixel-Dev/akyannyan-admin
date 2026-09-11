@@ -9,6 +9,17 @@ export interface User {
   memberLevelId?: number;
   memberLevelName?: string;
   premiumExpiresAt?: string;
+  birthYear?: number;
+  birthMonth?: number;
+  birthDay?: number;
+  birthHour?: number;
+  birthMinute?: number;
+  birthDate?: string;
+  birthTime?: string;
+  birthTimeUnknown?: boolean;
+  birthPlace?: string;
+  gender?: string;
+  daySign?: string;
   createdAt: string;
   updatedAt: string;
 }
