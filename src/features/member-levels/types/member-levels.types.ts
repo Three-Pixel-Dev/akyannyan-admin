@@ -6,6 +6,8 @@ export interface MemberLevel {
   durationMonths?: number;
   amount?: number;
   currency?: string;
+  /** Package points granted when a code for this tier is first activated. */
+  initialCreditPoints?: number;
   codeCount?: number;
   createdAt: string;
   updatedAt: string;
@@ -18,6 +20,7 @@ export interface MemberLevelRequest {
   durationMonths?: number;
   amount?: number;
   currency?: string;
+  initialCreditPoints?: number;
 }
 
 export interface MemberLevelFilter {

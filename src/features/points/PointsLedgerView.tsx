@@ -118,6 +118,8 @@ export function PointsLedgerView() {
         return <Status tone="jade">↩️ ပြန်အမ်းငွေ (Refund)</Status>;
       case 'MERIT_REWARD':
         return <Status tone="gold">🏺 ကံစုဘူးဆု (Reward)</Status>;
+      case 'MEMBERSHIP_GRANT':
+        return <Status tone="gold">👑 အသင်းဝင် ကနဦးအမှတ်</Status>;
       default:
         return <Status tone="jade">{type}</Status>;
     }
@@ -187,6 +189,7 @@ export function PointsLedgerView() {
             <option value="ALL">အမျိုးအစား အားလုံး</option>
             <option value="STAGE_DEDUCT">🔻 STAGE DEDUCT (ဖြတ်တောက်မှု)</option>
             <option value="TOP_UP">🪙 TOP UP (ဖြည့်သွင်းမှု)</option>
+            <option value="MEMBERSHIP_GRANT">👑 MEMBERSHIP GRANT (ကနဦးအမှတ်)</option>
             <option value="ADMIN_ADJUST">⚖️ ADMIN ADJUST (ချိန်ညှိမှု)</option>
             <option value="REFUND">↩️ REFUND (ပြန်အမ်းမှု)</option>
             <option value="MERIT_REWARD">🏺 MERIT REWARD (ကံစုဘူး)</option>

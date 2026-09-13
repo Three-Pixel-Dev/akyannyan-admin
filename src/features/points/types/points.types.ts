@@ -45,7 +45,10 @@ export type PointTransactionType =
   | 'REFUND'
   | 'PROMOTION'
   | 'ADMIN_ADJUST'
-  | 'MERIT_REWARD';
+  | 'MERIT_REWARD'
+  | 'MEMBERSHIP_GRANT'
+  | 'READING'
+  | 'DAY_PICK';
 
 export interface PointsTransaction {
   id: number;

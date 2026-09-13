@@ -28,6 +28,7 @@ export function MemberLevelsView({ onNavigateToCodes }: MemberLevelsViewProps) {
     durationMonths: 1,
     amount: 10000,
     currency: 'MMK',
+    initialCreditPoints: 50,
   });
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -70,6 +71,7 @@ export function MemberLevelsView({ onNavigateToCodes }: MemberLevelsViewProps) {
       durationMonths: 1,
       amount: 10000,
       currency: 'MMK',
+      initialCreditPoints: 50,
     });
     setFormError(null);
     setIsFormOpen(true);
@@ -85,6 +87,7 @@ export function MemberLevelsView({ onNavigateToCodes }: MemberLevelsViewProps) {
       durationMonths: level.durationMonths || 1,
       amount: level.amount || 0,
       currency: level.currency || 'MMK',
+      initialCreditPoints: level.initialCreditPoints ?? 0,
     });
     setFormError(null);
     setIsFormOpen(true);
@@ -253,6 +256,7 @@ export function MemberLevelsView({ onNavigateToCodes }: MemberLevelsViewProps) {
                   <th scope="col">အဆင့်အမည် (Tier Name)</th>
                   <th scope="col">သက်တမ်း (Duration)</th>
                   <th scope="col">နှုန်းထား (Price)</th>
+                  <th scope="col">ကနဦး အမှတ် (Credits)</th>
                   <th scope="col">ထုတ်ပြီးကုဒ် (Codes)</th>
                   <th scope="col" className="text-right">လုပ်ဆောင်ချက်များ (Actions)</th>
                 </tr>
@@ -289,6 +293,11 @@ export function MemberLevelsView({ onNavigateToCodes }: MemberLevelsViewProps) {
                           ? 'အခမဲ့ (Free)'
                           : formatMoney(level.amount, level.currency)}
                       </strong>
+                    </td>
+                    <td>
+                      <span title="Login with code အရင်ဆုံး activate လုပ်သည့်အခါ ပေးမည့် package credits">
+                        🪙 {level.initialCreditPoints ?? 0} pts
+                      </span>
                     </td>
                     <td>
                       <button
@@ -462,6 +471,31 @@ export function MemberLevelsView({ onNavigateToCodes }: MemberLevelsViewProps) {
                     className="form-input"
                   />
                 </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="tier-credits">
+                  ကနဦး အမှတ် / Initial Credits (package points)
+                </label>
+                <input
+                  id="tier-credits"
+                  type="number"
+                  min="0"
+                  step="1"
+                  placeholder="50"
+                  value={formData.initialCreditPoints !== undefined ? formData.initialCreditPoints : 0}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      initialCreditPoints: e.target.value !== '' ? parseInt(e.target.value, 10) : 0,
+                    })
+                  }
+                  className="form-input"
+                />
+                <small className="form-hint">
+                  အဆင့်ကုဒ်ဖြင့် ပထမဆုံး login / activate လုပ်သည့်အခါ အသုံးပြုသူ wallet သို့ ထည့်ပေးမည့် အမှတ်။
+                  ထပ်မံ login လုပ်လျှင် ထပ်မပေးပါ။
+                </small>
               </div>
 
               <div className="modal-footer">
