@@ -84,6 +84,17 @@ const DEFAULT_CONFIGS: PointsConfig[] = [
   },
   {
     id: 8,
+    featureKey: 'LIFETIME_CHART_EXTERNAL',
+    featureName: 'တစ်သက်စာ ဟောစာတမ်း (အခြားသူအတွက်)',
+    costPoints: 30,
+    isEnabled: true,
+    description: 'မွေးချက်ကောင်းကင်နှင့် မွေးမဟာဘုတ်အိမ်ဖြင့် တစ်သက်စာ ဟောစာတမ်း',
+    category: 'ASTROLOGY',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 9,
     featureKey: 'AI_DEEP_REMEDY_STAGE',
     featureName: 'နတ်မင်းကြီးများ ယတြာနှင့် အစီအရင် အဆင့်',
     costPoints: 5,
