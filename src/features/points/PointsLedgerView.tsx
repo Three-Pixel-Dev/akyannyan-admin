@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button, Card, Metric, PageHeader, Status } from '../../components/ui';
-import { showToast } from '../../components/Toast';
 import { adminPointsService } from './services/points.service';
-import type { PointsAdjustRequest, PointsTransaction, PointTransactionType } from './types/points.types';
+import type { PointsTransaction, PointTransactionType } from './types/points.types';
 
 export function PointsLedgerView() {
   const [transactions, setTransactions] = useState<PointsTransaction[]>([]);
@@ -14,13 +13,6 @@ export function PointsLedgerView() {
   const [totalPages, setTotalPages] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
   const [typeFilter, setTypeFilter] = useState<string>('ALL');
-
-  // Manual Adjust Modal
-  const [isAdjustModalOpen, setIsAdjustModalOpen] = useState(false);
-  const [targetUserId, setTargetUserId] = useState<string>('');
-  const [adjustAmount, setAdjustAmount] = useState<string>('50');
-  const [adjustNote, setAdjustNote] = useState<string>('');
-  const [adjusting, setAdjusting] = useState(false);
 
   const getTxType = (tx: PointsTransaction): PointTransactionType =>
     (tx.transactionType || tx.source || 'TOP_UP') as PointTransactionType;
@@ -50,46 +42,6 @@ export function PointsLedgerView() {
   useEffect(() => {
     fetchTransactions();
   }, [page, size, typeFilter]);
-
-  const handleAdjustSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const uid = parseInt(targetUserId, 10);
-    const amt = parseInt(adjustAmount, 10);
-
-    if (!uid || isNaN(uid)) {
-      showToast('အသုံးပြုသူ ID ကို မှန်ကန်စွာ ထည့်သွင်းပါ', 'error');
-      return;
-    }
-    if (!amt || isNaN(amt) || amt === 0) {
-      showToast('ချိန်ညှိမည့် အမှတ်ပမာဏကို မှန်ကန်စွာ ထည့်သွင်းပါ (၀ မဖြစ်ရပါ)', 'error');
-      return;
-    }
-    if (!adjustNote.trim()) {
-      showToast('ချိန်ညှိရသည့် အကြောင်းပြချက်ကို ဖြည့်သွင်းပါ', 'error');
-      return;
-    }
-
-    setAdjusting(true);
-    const req: PointsAdjustRequest = {
-      targetUserId: uid,
-      amount: amt,
-      note: adjustNote.trim(),
-    };
-
-    try {
-      await adminPointsService.adjustPoints(req);
-      showToast(`အသုံးပြုသူ #${uid} အတွက် အမှတ် (${amt > 0 ? `+${amt}` : amt}) ကို အောင်မြင်စွာ ချိန်ညှိပြီးပါပြီ။`, 'success');
-      setIsAdjustModalOpen(false);
-      setTargetUserId('');
-      setAdjustAmount('50');
-      setAdjustNote('');
-      fetchTransactions();
-    } catch (err: any) {
-      showToast(`အမှတ်ချိန်ညှိခြင်း မအောင်မြင်ပါ: ${err.message}`, 'error');
-    } finally {
-      setAdjusting(false);
-    }
-  };
 
   const formatDate = (iso?: string) => {
     if (!iso) return '—';
@@ -127,7 +79,6 @@ export function PointsLedgerView() {
 
   const deductCount = transactions.filter((t) => getTxType(t) === 'STAGE_DEDUCT').length;
   const topupCount = transactions.filter((t) => getTxType(t) === 'TOP_UP').length;
-  const adjustCount = transactions.filter((t) => getTxType(t) === 'ADMIN_ADJUST').length;
 
   return (
     <div className="page">
@@ -138,9 +89,6 @@ export function PointsLedgerView() {
           <div className="header-action-group">
             <Button variant="ghost" onClick={fetchTransactions} disabled={loading}>
               🔄 ပြန်စစ်မည်
-            </Button>
-            <Button variant="jade" onClick={() => setIsAdjustModalOpen(true)}>
-              ⚖️ လက်စွဲ အမှတ်ချိန်ညှိမည်
             </Button>
           </div>
         }
@@ -165,12 +113,6 @@ export function PointsLedgerView() {
           value={`${topupCount} ကြိမ်`}
           detail="ဘောက်ချာကုဒ်ဖြင့် ထည့်သွင်းထားမှု"
         />
-        <Metric
-          icon="⚖️"
-          label="လက်စွဲ ချိန်ညှိမှုများ"
-          value={`${adjustCount} ကြိမ်`}
-          detail="Admin မှ စီမံထားသော မှတ်တမ်း"
-        />
       </div>
 
       <Card className="table-card">
@@ -190,7 +132,6 @@ export function PointsLedgerView() {
             <option value="STAGE_DEDUCT">🔻 STAGE DEDUCT (ဖြတ်တောက်မှု)</option>
             <option value="TOP_UP">🪙 TOP UP (ဖြည့်သွင်းမှု)</option>
             <option value="MEMBERSHIP_GRANT">👑 MEMBERSHIP GRANT (ကနဦးအမှတ်)</option>
-            <option value="ADMIN_ADJUST">⚖️ ADMIN ADJUST (ချိန်ညှိမှု)</option>
             <option value="REFUND">↩️ REFUND (ပြန်အမ်းမှု)</option>
             <option value="MERIT_REWARD">🏺 MERIT REWARD (ကံစုဘူး)</option>
           </select>
@@ -287,80 +228,6 @@ export function PointsLedgerView() {
           </div>
         )}
       </Card>
-
-      {/* Manual Adjust Modal */}
-      {isAdjustModalOpen && (
-        <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="adjust-title">
-          <div className="modal-backdrop" onClick={() => !adjusting && setIsAdjustModalOpen(false)} />
-          <div className="modal-content">
-            <div className="modal-header">
-              <h2 id="adjust-title">⚖️ လက်စွဲ အမှတ်ချိန်ညှိခြင်း (Manual Adjustment)</h2>
-              <button
-                type="button"
-                className="modal-close-btn"
-                onClick={() => setIsAdjustModalOpen(false)}
-                disabled={adjusting}
-                aria-label="Close"
-              >
-                ×
-              </button>
-            </div>
-
-            <form onSubmit={handleAdjustSubmit} className="modal-form">
-              <div className="form-group">
-                <label htmlFor="target-user-id">အသုံးပြုသူ ID (User ID) *</label>
-                <input
-                  id="target-user-id"
-                  type="number"
-                  required
-                  value={targetUserId}
-                  onChange={(e) => setTargetUserId(e.target.value)}
-                  placeholder="ဥပမာ: 1"
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="adjust-amount">ချိန်ညှိမည့် အမှတ်ပမာဏ (+ သို့မဟုတ် -) *</label>
-                <input
-                  id="adjust-amount"
-                  type="number"
-                  required
-                  value={adjustAmount}
-                  onChange={(e) => setAdjustAmount(e.target.value)}
-                  placeholder="+100 သို့မဟုတ် -50"
-                  className="form-input"
-                />
-                <small className="form-hint">
-                  အမှတ်ထပ်ပေါင်းပေးရန် အပေါင်းတန်ဖိုး (ဥပမာ 50)၊ အမှတ်နုတ်ယူရန် အနုတ်တန်ဖိုး (ဥပမာ -20) ရိုက်ထည့်ပါ။
-                </small>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="adjust-note">အကြောင်းပြချက် မှတ်ချက် (Reason Note) *</label>
-                <textarea
-                  id="adjust-note"
-                  required
-                  rows={3}
-                  value={adjustNote}
-                  onChange={(e) => setAdjustNote(e.target.value)}
-                  placeholder="ဥပမာ: Customer service compensation for delayed reading..."
-                  className="form-input"
-                />
-              </div>
-
-              <div className="modal-footer">
-                <Button type="button" variant="ghost" onClick={() => setIsAdjustModalOpen(false)} disabled={adjusting}>
-                  မလုပ်တော့ပါ (Cancel)
-                </Button>
-                <Button type="submit" variant="jade" disabled={adjusting}>
-                  {adjusting ? 'ချိန်ညှိနေပါသည်...' : '✓ အမှတ် ချိန်ညှိမည်'}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

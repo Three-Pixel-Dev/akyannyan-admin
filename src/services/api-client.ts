@@ -111,6 +111,41 @@ export const apiClient = {
     });
   },
 
+  patch<T = any>(endpoint: string, data?: any, headers?: Record<string, string>) {
+    return this.request<T>(endpoint, {
+      method: 'PATCH',
+      body: data ? JSON.stringify(data) : undefined,
+      headers,
+    });
+  },
+
+  async upload<T = any>(endpoint: string, file: File, purpose: string): Promise<ApiResponse<T>> {
+    const token = this.getToken();
+    const form = new FormData();
+    form.append('file', file);
+    const headers: Record<string, string> = {
+      Accept: 'application/json',
+    };
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    const separator = endpoint.includes('?') ? '&' : '?';
+    const response = await fetch(`${endpoint}${separator}purpose=${encodeURIComponent(purpose)}`, {
+      method: 'POST',
+      headers,
+      body: form,
+    });
+    if (response.status === 401) {
+      this.removeToken();
+      throw new Error('Session expired. Please log in again.');
+    }
+    const json = await response.json().catch(() => null);
+    if (!response.ok) {
+      throw new Error(json?.message || `Request failed with status ${response.status}`);
+    }
+    return json;
+  },
+
   delete<T = any>(endpoint: string, headers?: Record<string, string>) {
     return this.request<T>(endpoint, { method: 'DELETE', headers });
   },
