@@ -2191,3 +2191,253 @@ main {
     justify-content: space-between;
   }
 }
+
+.merit-header-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.merit-metrics {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.merit-toolbar-card {
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+
+.merit-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px 16px;
+}
+
+.merit-toolbar-field {
+  flex: 0 0 140px;
+  min-width: 0;
+}
+
+.merit-toolbar-month {
+  flex: 0 0 220px;
+}
+
+.merit-toolbar-field > span,
+.merit-points-field > span {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.merit-toolbar-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  padding-bottom: 4px;
+}
+
+.merit-weeks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.merit-weeks-5 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.merit-week-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 18px;
+  overflow: hidden;
+}
+
+.merit-week-col > .button {
+  width: 100%;
+}
+
+.merit-week-head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.merit-week-title {
+  min-width: 0;
+}
+
+.merit-week-head h2 {
+  margin: 2px 0 0;
+  font-size: 18px;
+  font-family: 'Padauk', 'Plus Jakarta Sans', sans-serif;
+}
+
+.merit-week-head small {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.merit-week-head .button {
+  width: 100%;
+}
+
+.merit-section-label {
+  margin: 4px 0 0;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.merit-activity-list {
+  display: grid;
+  gap: 8px;
+}
+
+.merit-activity-row {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) 72px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--bg-primary);
+}
+
+.merit-activity-row.on {
+  border-color: var(--gold-primary);
+  background: rgb(232 181 77 / 0.08);
+}
+
+.merit-toggle {
+  min-height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.merit-toggle.on {
+  border-color: var(--gold-primary);
+  background: var(--gold-primary);
+  color: var(--bg-primary);
+  font-weight: 700;
+}
+
+.merit-activity-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.merit-activity-copy strong {
+  font-size: 13px;
+}
+
+.merit-activity-hint {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+.merit-activity-off {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.merit-empty {
+  border: 1px dashed var(--border-color);
+  border-radius: 12px;
+  padding: 22px 12px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  background: var(--bg-primary);
+}
+
+.merit-deed-row {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--bg-primary);
+}
+
+.merit-glyph-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.merit-glyph-chip {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.merit-glyph-chip.active {
+  border-color: var(--gold-primary);
+  background: rgb(232 181 77 / 0.12);
+}
+
+.merit-deed-meta {
+  display: grid;
+  grid-template-columns: 72px auto;
+  gap: 8px;
+  align-items: end;
+}
+
+.merit-points-field input {
+  min-height: 42px;
+}
+
+@media (max-width: 1100px) {
+  .merit-weeks,
+  .merit-weeks-5 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 980px) {
+  .merit-metrics {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .merit-toolbar-field,
+  .merit-toolbar-month {
+    flex: 1 1 100%;
+  }
+  .merit-toolbar-status {
+    margin-left: 0;
+    width: 100%;
+  }
+  .merit-deed-meta,
+  .merit-activity-row {
+    grid-template-columns: 1fr;
+  }
+  .merit-activity-off {
+    text-align: left;
+  }
+}
