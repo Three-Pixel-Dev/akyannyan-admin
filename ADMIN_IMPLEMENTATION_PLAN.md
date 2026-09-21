@@ -50,6 +50,7 @@ Allows admin to configure base point costs for every feature stage and external 
   - `TRANSIT_EXTERNAL`: 15 points
   - `COMPATIBILITY_PAIR`: 10 points
   - `TAROT_SPREAD_3_CARD`: 5 points
+  - `TAROT_SPREAD_5_CARD`: 8 points
   - `BPZ_DECISION_ANALYSIS`: 15 points
   - `AI_DEEP_REMEDY_STAGE`: 5 points
 - **Fields**: Feature Key, Display Name, Cost (Points), Is Enabled, Minimum Tier Allowed.
