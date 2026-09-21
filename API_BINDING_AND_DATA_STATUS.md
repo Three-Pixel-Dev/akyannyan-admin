@@ -19,6 +19,7 @@
 | **Points Ledger** | `src/features/points/PointsLedgerView.tsx` | 🟢 **API BIND DONE** | `GET /api/v1/admin/points/transactions`<br>`POST /api/v1/admin/points/adjust` | `AdminPointsController` | Global points audit trail. Filter by user/date/type. Manual adjustment modal for super-admin credit/debit. Mock fallback. |
 | **Users** | `src/features/users/UsersView.tsx` | 🟢 **API BIND DONE** | `GET /api/users/pageable`<br>`POST /api/users/create-with-login-code`<br>`POST /api/users/create-bulk-with-login-code`<br>`DELETE /api/users/{id}` | `UsersController` | Paginated user table with search, level filter, role filter. Single & bulk user creation with login codes. View details & delete modals. Mock fallback. |
 | **Content (CMS)** | `src/features/content/ContentView.tsx` | ⚪ **MOCK** | *None yet*<br>*(Target: `/api/v1/admin/content/**`)* | *Entity & Model ready*<br>*No Controller/Service yet* | 12 mock Burmese content items (ဂါထာ, articles, videos, audio). Type filter tabs, day-sign filter, search, publish toggle, create/edit modal. Ready for API binding. |
+| **ကံစုဘူး** | `src/features/merit/MeritView.tsx` | 🟢 **API BIND DONE** | `GET/PUT /api/v1/admin/merit/months/{year}/{month}`<br>`POST .../publish`<br>`POST .../copy-from` | `AdminMeritController` | Week switchboard: toggle ဂါထာ / Tarot / မှတ်တမ်း (points only; no admin text). Honor habits still have label/glyph. ဂါထာ links to CMS morning gahtar. |
 | **Oracle** | `src/features/oracle/OracleView.tsx` | 🟡 **HYBRID** | *No persistence endpoint yet* | `AkyannyanOracleConversation`<br>*(Entity ready)* | 4 template cards (System Prompt, Daily Quota, Safety Policy, Tarot Prompt). Template editor modal with model/temperature/maxTokens config. Local state only — no backend save. |
 | **Settings** | `src/features/settings/SettingsView.tsx` | ⚪ **MOCK** | *None yet*<br>*(Target: `/api/v1/admin/settings/**`)* | *No Controller yet* | 4-tab settings panel: System (server health), Astrology (Mahabote, KP, Calendar), Notifications (Messenger, push cron), Quotas (Oracle limits, maintenance). All mock-editable. |
 
@@ -42,6 +43,11 @@
 - **Files**: `UsersView.tsx`, `services/users.service.ts`
 - **Connected Endpoints**: `/api/users/pageable`, `/api/users/create-with-login-code`, `/api/users/create-bulk-with-login-code`, `/api/users/{id}`
 - **Features**: Single & bulk user creation with auto-generated login codes, member level assignment, view details, delete confirmation
+
+#### D. ကံစုဘူး month program
+- **Files**: `MeritView.tsx`, `services/merit.service.ts`
+- **Connected Endpoints**: `GET/PUT /api/v1/admin/merit/months/{year}/{month}`, `POST .../publish`, `POST .../copy-from`
+- **Features**: Year/month picker, 4 or 5 Monday–Sunday columns, activity toggles (RITUAL/TAROT/JOURNAL points only), honor habit label/glyph, draft save, publish, duplicate previous month
 
 ---
 

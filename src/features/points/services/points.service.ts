@@ -5,7 +5,6 @@ import type {
   TopupCode,
   TopupCodeBulkGenerateRequest,
   PointsTransaction,
-  PointsAdjustRequest,
 } from '../types/points.types';
 
 const BASE_URL = '/api/v1/admin/points';
@@ -75,12 +74,6 @@ export const adminPointsService = {
     const response = await apiClient.get<PaginationDTO<PointsTransaction>>(
       `${BASE_URL}/transactions?page=${page}&size=${size}`
     );
-    return response.data;
-  },
-
-  // Manual Adjustments
-  async adjustPoints(req: PointsAdjustRequest): Promise<PointsTransaction> {
-    const response = await apiClient.post<PointsTransaction>(`${BASE_URL}/adjust`, req);
     return response.data;
   },
 };

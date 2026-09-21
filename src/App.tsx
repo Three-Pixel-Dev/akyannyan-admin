@@ -12,6 +12,7 @@ import { TopupCodesView } from './features/points/TopupCodesView';
 import { PointsLedgerView } from './features/points/PointsLedgerView';
 import { OracleView } from './features/oracle/OracleView';
 import { ContentView } from './features/content/ContentView';
+import { MeritView } from './features/merit/MeritView';
 import { SettingsView } from './features/settings/SettingsView';
 
 export type View =
@@ -23,6 +24,7 @@ export type View =
   | 'points-ledger'
   | 'users'
   | 'content'
+  | 'su-buu'
   | 'oracle'
   | 'settings';
 
@@ -42,6 +44,7 @@ const nav: NavItem[] = [
   { id: 'points-ledger', icon: '📜', label: 'အမှတ်စာရင်း (Ledger)' },
   { id: 'users', icon: '◉', label: 'အသုံးပြုသူများ (Users)' },
   { id: 'content', icon: '▤', label: 'အကြောင်းအရာ (Content)' },
+  { id: 'su-buu', icon: '🏺', label: 'ကံစုဘူး' },
   { id: 'oracle', icon: '✦', label: 'Oracle' },
   { id: 'settings', icon: '⚙', label: 'ဆက်တင်များ (Settings)' },
 ];
@@ -55,6 +58,7 @@ const VALID_VIEWS: View[] = [
   'points-ledger',
   'users',
   'content',
+  'su-buu',
   'oracle',
   'settings',
 ];
@@ -254,6 +258,7 @@ export default function App() {
         {view === 'users' && <UsersView />}
         {view === 'oracle' && <OracleView />}
         {view === 'content' && <ContentView />}
+        {view === 'su-buu' && <MeritView />}
         {view === 'settings' && <SettingsView />}
       </main>
     </div>
@@ -353,6 +358,7 @@ function Dashboard({ setView }: { setView: (view: View) => void }) {
           {[
             ['👑', 'အသင်းဝင် အဆင့် စီမံမည်', () => setView('member-levels')],
             ['🎟️', 'Voucher Code အသစ် ထုတ်မည်', () => setView('member-level-codes')],
+            ['🏺', 'ကံစုဘူး လအစီအစဉ်', () => setView('su-buu')],
             ['☀', 'နေ့စဉ် ကံဇာတာ ပြင်မည်', () => setView('content')],
           ].map(([icon, label, action]) => (
             <button

@@ -68,9 +68,3 @@ export interface PointsTransaction {
   note?: string;
   createdAt: string;
 }
-
-export interface PointsAdjustRequest {
-  targetUserId: number;
-  amount: number;
-  note: string;
-}
