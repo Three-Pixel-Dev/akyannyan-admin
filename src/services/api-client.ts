@@ -31,6 +31,14 @@ export interface PageAndFilterDTO<F = any> {
 const TOKEN_KEY = 'akn_admin_token';
 const USER_KEY = 'akn_admin_user';
 
+/** Production: set VITE_API_BASE_URL=https://api-akn.duolinkmm.com (no trailing slash). Local Vite uses proxy. */
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') || '';
+
+function apiUrl(endpoint: string): string {
+  if (!endpoint.startsWith('/')) return `${API_BASE_URL}/${endpoint}`;
+  return `${API_BASE_URL}${endpoint}`;
+}
+
 export const apiClient = {
   getToken(): string | null {
     return localStorage.getItem(TOKEN_KEY);
@@ -59,7 +67,7 @@ export const apiClient = {
     }
 
     try {
-      const response = await fetch(endpoint, {
+      const response = await fetch(apiUrl(endpoint), {
         ...options,
         headers,
       });
@@ -130,7 +138,7 @@ export const apiClient = {
       headers.Authorization = `Bearer ${token}`;
     }
     const separator = endpoint.includes('?') ? '&' : '?';
-    const response = await fetch(`${endpoint}${separator}purpose=${encodeURIComponent(purpose)}`, {
+    const response = await fetch(`${apiUrl(endpoint)}${separator}purpose=${encodeURIComponent(purpose)}`, {
       method: 'POST',
       headers,
       body: form,
