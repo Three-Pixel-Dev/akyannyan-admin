@@ -1,5 +1,3 @@
-package com.expnai.akyannyan.features.oracle;
-
 import type { OraclePromptTemplateDto, OraclePromptTemplateRequest } from '../types/oracle.types';
 import { apiClient } from '../../../services/api-client';
 
