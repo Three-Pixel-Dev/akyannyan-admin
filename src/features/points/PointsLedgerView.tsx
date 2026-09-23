@@ -61,17 +61,17 @@ export function PointsLedgerView() {
   const renderTypeStatus = (type: PointTransactionType) => {
     switch (type) {
       case 'TOP_UP':
-        return <Status tone="gold">🪙 ဖြည့်သွင်းမှု (Top-up)</Status>;
+        return <Status tone="gold">🪙 TOP-UP</Status>;
       case 'STAGE_DEDUCT':
-        return <Status tone="danger">🔻 အဆင့်ဖြတ်တောက် (Deduct)</Status>;
+        return <Status tone="danger">🔻 DEDUCT</Status>;
       case 'ADMIN_ADJUST':
-        return <Status tone="jade">⚖️ စီမံသူချိန်ညှိ (Adjust)</Status>;
+        return <Status tone="jade">⚖️ ADJUST</Status>;
       case 'REFUND':
-        return <Status tone="jade">↩️ ပြန်အမ်းငွေ (Refund)</Status>;
+        return <Status tone="jade">↩️ REFUND</Status>;
       case 'MERIT_REWARD':
-        return <Status tone="gold">🏺 ကံစုဘူးဆု (Reward)</Status>;
+        return <Status tone="gold">🏺 MERIT REWARD</Status>;
       case 'MEMBERSHIP_GRANT':
-        return <Status tone="gold">👑 အသင်းဝင် ကနဦးအမှတ်</Status>;
+        return <Status tone="gold">👑 TIER GRANT</Status>;
       default:
         return <Status tone="jade">{type}</Status>;
     }
@@ -83,12 +83,12 @@ export function PointsLedgerView() {
   return (
     <div className="page">
       <PageHeader
-        title="အမှတ်မှတ်တမ်းနှင့် စာရင်းချုပ် (Points Ledger)"
-        description="မိုဘိုင်းအသုံးပြုသူများ၏ ဝန်ဆောင်မှုအလိုက် အမှတ်ဖြတ်တောက်မှု၊ ဖြည့်သွင်းမှုနှင့် အလှူကုသိုလ်ဆု မှတ်တမ်းများ။"
+        title="User History"
+        description="Points top-ups, deductions, tier grants, and merit rewards for all users."
         action={
           <div className="header-action-group">
             <Button variant="ghost" onClick={fetchTransactions} disabled={loading}>
-              🔄 ပြန်စစ်မည်
+              🔄 Refresh
             </Button>
           </div>
         }
@@ -97,21 +97,21 @@ export function PointsLedgerView() {
       <div className="metrics">
         <Metric
           icon="📜"
-          label="မှတ်တမ်း စုစုပေါင်း"
-          value={`${totalItems || transactions.length} ခု`}
-          detail="စနစ်တွင်း ငွေသွင်းငွေထုတ် လှုပ်ရှားမှုများ"
+          label="TOTAL ENTRIES"
+          value={`${totalItems || transactions.length}`}
+          detail="All wallet movements"
         />
         <Metric
           icon="🔻"
-          label="ဝန်ဆောင်မှု အသုံးပြုမှု"
-          value={`${deductCount} ကြိမ်`}
-          detail="Stage-by-stage ဖြတ်တောက်မှုများ"
+          label="DEDUCTIONS"
+          value={`${deductCount}`}
+          detail="Stage spend on this page"
         />
         <Metric
           icon="🪙"
-          label="အမှတ်ဖြည့်သွင်းမှု"
-          value={`${topupCount} ကြိမ်`}
-          detail="ဘောက်ချာကုဒ်ဖြင့် ထည့်သွင်းထားမှု"
+          label="TOP-UPS"
+          value={`${topupCount}`}
+          detail="Top-up code redemptions"
         />
       </div>
 
@@ -128,10 +128,10 @@ export function PointsLedgerView() {
             style={{ width: '220px', minHeight: '36px' }}
             aria-label="Filter by transaction type"
           >
-            <option value="ALL">အမျိုးအစား အားလုံး</option>
-            <option value="STAGE_DEDUCT">🔻 STAGE DEDUCT (ဖြတ်တောက်မှု)</option>
-            <option value="TOP_UP">🪙 TOP UP (ဖြည့်သွင်းမှု)</option>
-            <option value="MEMBERSHIP_GRANT">👑 MEMBERSHIP GRANT (ကနဦးအမှတ်)</option>
+            <option value="ALL">All types</option>
+            <option value="STAGE_DEDUCT">DEDUCT</option>
+            <option value="TOP_UP">TOP-UP</option>
+            <option value="MEMBERSHIP_GRANT">TIER GRANT</option>
             <option value="REFUND">↩️ REFUND (ပြန်အမ်းမှု)</option>
             <option value="MERIT_REWARD">🏺 MERIT REWARD (ကံစုဘူး)</option>
           </select>

@@ -170,11 +170,11 @@ export function MemberLevelsView({ onNavigateToCodes }: MemberLevelsViewProps) {
   return (
     <div className="page">
       <PageHeader
-        title="အသင်းဝင် အဆင့်များ (Member Levels)"
-        description="Akyannyan အဖွဲ့ဝင် အဆင့်ခွဲခြားမှုများ၊ သက်တမ်းနှင့် နှုန်းထားများကို စီမံခန့်ခွဲပြီး Voucher Code များ ထုတ်ဝေပါ။"
+        title="User Tiers"
+        description="Define membership tiers, duration, and package credits. Issue user codes from each tier."
         action={
-          <Button onClick={handleOpenCreate} variant="jade" aria-label="Create new member level">
-            ＋ အဆင့် အသစ် ထည့်မည်
+          <Button onClick={handleOpenCreate} variant="jade" aria-label="Create new user tier">
+            ＋ Add User Tier
           </Button>
         }
       />
@@ -185,25 +185,25 @@ export function MemberLevelsView({ onNavigateToCodes }: MemberLevelsViewProps) {
           icon="👑"
           label="TOTAL TIERS"
           value={levels.length.toString()}
-          detail="လက်ရှိ သတ်မှတ်ထားသော အဆင့်များ"
+          detail="Configured user tiers"
         />
         <Metric
           icon="🎟️"
-          label="GENERATED CODES"
+          label="USER CODES"
           value={totalCodes.toString()}
-          detail="ထုတ်ဝေထားသော အဆင့်ကုဒ် စုစုပေါင်း"
+          detail="Codes issued across tiers"
         />
         <Metric
           icon="💎"
-          label="VIP TIERS"
+          label="PAID TIERS"
           value={levels.filter((l) => (l.amount || 0) > 0).length.toString()}
-          detail="အခပေး Premium အဆင့်များ"
+          detail="Premium paid tiers"
         />
         <Metric
           icon="⚡"
           label="FREE TIERS"
           value={levels.filter((l) => (l.amount || 0) === 0).length.toString()}
-          detail="အခမဲ့ စတင် အဆင့်များ"
+          detail="Free starter tiers"
         />
       </div>
 
@@ -318,19 +318,19 @@ export function MemberLevelsView({ onNavigateToCodes }: MemberLevelsViewProps) {
                             setGenPrefix(level.name.slice(0, 3).toUpperCase() + '-');
                             setGenExpiryDays(level.durationDays || 30);
                           }}
-                          title="အဆင့်ကုဒ်များ အစုလိုက် ထုတ်မည်"
-                          aria-label={`Generate voucher codes for ${level.name}`}
+                          title="Issue user codes for this tier"
+                          aria-label={`Issue user codes for ${level.name}`}
                         >
-                          ⚡ ကုဒ်ထုတ်မည်
+                          ⚡ Issue Codes
                         </button>
                         <button
                           type="button"
                           className="action-btn action-edit"
                           onClick={() => handleOpenEdit(level)}
-                          title="ပြင်ဆင်မည်"
+                          title="Edit"
                           aria-label={`Edit ${level.name}`}
                         >
-                          ✏️ ပြင်မည်
+                          ✏️ Edit
                         </button>
                         <button
                           type="button"

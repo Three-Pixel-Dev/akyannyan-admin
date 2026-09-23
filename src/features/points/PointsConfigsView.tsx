@@ -435,9 +435,9 @@ export function PointsConfigsView() {
                         title="အဖွင့်/အပိတ် ပြောင်းလဲရန် နှိပ်ပါ"
                       >
                         {c.isEnabled ? (
-                          <Status tone="jade">🟢 ဖွင့်ထားသည်</Status>
+                          <Status tone="jade">🟢 ENABLED</Status>
                         ) : (
-                          <Status tone="danger">🔴 ပိတ်ထားသည်</Status>
+                          <Status tone="danger">🔴 DISABLED</Status>
                         )}
                       </button>
                     </td>

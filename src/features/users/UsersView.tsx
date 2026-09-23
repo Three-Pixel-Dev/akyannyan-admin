@@ -198,16 +198,33 @@ export function UsersView() {
     }
   };
 
-  const handleDeleteConfirm = async () => {
-    if (!deletingUser) return;
+  const handleToggleActive = async (user: User) => {
+    if (user.role === 'ADMIN') {
+      showToast('Cannot deactivate an admin account.', 'error');
+      return;
+    }
+    const nextActive = !user.active;
     try {
-      await usersService.deleteUser(deletingUser.id);
-      showToast(`အသုံးပြုသူ "${deletingUser.displayName}" ကို ဖျက်သိမ်းပြီးပါပြီ။`, 'info');
+      await usersService.setUserActive(user.id, nextActive);
+      showToast(
+        nextActive
+          ? `User "${user.displayName}" activated.`
+          : `User "${user.displayName}" deactivated.`,
+        nextActive ? 'success' : 'info',
+      );
       setDeletingUser(null);
+      if (viewingUser?.id === user.id) {
+        setViewingUser({ ...viewingUser, active: nextActive });
+      }
       fetchUsers();
     } catch (err: any) {
-      showToast(err.message || 'ဖျက်သိမ်းမှု မအောင်မြင်ပါ', 'error');
+      showToast(err.message || 'Could not update user status', 'error');
     }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingUser) return;
+    await handleToggleActive(deletingUser);
   };
 
   const formatDate = (dateStr?: string) => {
@@ -269,8 +286,8 @@ export function UsersView() {
   return (
     <div className="page">
       <PageHeader
-        title="အသုံးပြုသူများ (Users Management)"
-        description="Akyannyan အသုံးပြုသူ အကောင့်များနှင့် Login Code အသုံးပြုသူများကို တစ်ဦးချင်း (သို့) အစုလိုက် အမြန်ဖန်တီး၍ စီမံခန့်ခွဲပါ။"
+        title="Users"
+        description="Manage accounts, login codes, user tiers, and activate or deactivate access."
         action={
           <Button
             onClick={() => {
@@ -280,7 +297,7 @@ export function UsersView() {
             variant="jade"
             aria-label="Create new user with login code"
           >
-            ＋ အသုံးပြုသူ ထည့်မည်
+            ＋ Add User
           </Button>
         }
       />
@@ -291,25 +308,25 @@ export function UsersView() {
           icon="👥"
           label="TOTAL USERS"
           value={totalItems.toString()}
-          detail="စနစ်တွင်း အသုံးပြုသူ စုစုပေါင်း"
+          detail="All users in the system"
         />
         <Metric
           icon="🔑"
           label="LOGIN CODE USERS"
           value={users.filter((u) => !!u.loginCode).length.toString()}
-          detail="ကုဒ်ဖြင့် အကောင့်ဝင်သော အသုံးပြုသူများ"
+          detail="Users who sign in with a code"
         />
         <Metric
           icon="💎"
           label="PREMIUM TIERS"
           value={users.filter((u) => u.memberLevelId && u.memberLevelName !== 'Free Tier').length.toString()}
-          detail="Premium အဆင့် ရရှိထားသူများ"
+          detail="Users on a paid tier"
         />
         <Metric
           icon="🟢"
           label="ACTIVE USERS"
           value={users.filter((u) => u.active).length.toString()}
-          detail="အသုံးပြုခွင့် ရရှိနေသော အကောင့်များ"
+          detail="Accounts that can sign in"
         />
       </div>
 
@@ -318,7 +335,7 @@ export function UsersView() {
         <div className="filter-toolbar">
           {/* Member Level Filter */}
           <div className="filter-field">
-            <label htmlFor="user-filter-level">အသင်းဝင် အဆင့် (Tier):</label>
+            <label htmlFor="user-filter-level">User Tier:</label>
             <select
               id="user-filter-level"
               value={levelFilter || ''}
@@ -328,7 +345,7 @@ export function UsersView() {
               }}
               className="form-select"
             >
-              <option value="">အားလုံး (All Tiers)</option>
+              <option value="">All Tiers</option>
               {levels.map((l) => (
                 <option key={l.id} value={l.id}>
                   {l.name}
@@ -339,7 +356,7 @@ export function UsersView() {
 
           {/* Role Filter */}
           <div className="filter-field">
-            <label htmlFor="user-filter-role">အခွင့်အရေး (Role):</label>
+            <label htmlFor="user-filter-role">Role:</label>
             <select
               id="user-filter-role"
               value={roleFilter}
@@ -349,9 +366,9 @@ export function UsersView() {
               }}
               className="form-select"
             >
-              <option value="ALL">အားလုံး (All Roles)</option>
-              <option value="USER">အသုံးပြုသူ (USER)</option>
-              <option value="ADMIN">စီမံခန့်ခွဲသူ (ADMIN)</option>
+              <option value="ALL">All Roles</option>
+              <option value="USER">USER</option>
+              <option value="ADMIN">ADMIN</option>
             </select>
           </div>
 
@@ -420,11 +437,11 @@ export function UsersView() {
             <table className="custom-table" aria-label="Users management table">
               <thead>
                 <tr>
-                  <th scope="col">အသုံးပြုသူ (User)</th>
+                  <th scope="col">User</th>
                   <th scope="col">Login Code</th>
-                  <th scope="col">အခွင့်အရေး (Role)</th>
-                  <th scope="col">အသင်းဝင် အဆင့် (Tier)</th>
-                  <th scope="col">အခြေအနေ (Status)</th>
+                  <th scope="col">Role</th>
+                  <th scope="col">User Tier</th>
+                  <th scope="col">Status</th>
                   <th scope="col" className="text-right">လုပ်ဆောင်ချက် (Actions)</th>
                 </tr>
               </thead>
@@ -479,14 +496,14 @@ export function UsersView() {
                           )}
                         </div>
                       ) : (
-                        <span className="text-muted">— မသတ်မှတ်ရသေး —</span>
+                        <span className="text-muted">— No tier —</span>
                       )}
                     </td>
                     <td>
                       {u.active ? (
-                        <Status tone="jade">🟢 ACTIVE</Status>
+                        <Status tone="jade">ACTIVE</Status>
                       ) : (
-                        <Status tone="danger">⚪ INACTIVE</Status>
+                        <Status tone="danger">INACTIVE</Status>
                       )}
                     </td>
                     <td className="text-right">
@@ -495,20 +512,24 @@ export function UsersView() {
                           type="button"
                           className="action-btn action-edit"
                           onClick={() => setViewingUser(u)}
-                          title="အသေးစိတ် ကြည့်မည်"
+                          title="View details"
                           aria-label={`View details for ${u.displayName}`}
                         >
-                          👁️ အသေးစိတ်
+                          👁️ Details
                         </button>
                         {u.role !== 'ADMIN' && (
                           <button
                             type="button"
-                            className="action-btn action-delete"
+                            className={`action-btn ${u.active ? 'action-delete' : 'action-edit'}`}
                             onClick={() => setDeletingUser(u)}
-                            title="ဖျက်သိမ်းမည်"
-                            aria-label={`Delete ${u.displayName}`}
+                            title={u.active ? 'Deactivate user' : 'Activate user'}
+                            aria-label={
+                              u.active
+                                ? `Deactivate ${u.displayName}`
+                                : `Activate ${u.displayName}`
+                            }
                           >
-                            🗑️
+                            {u.active ? 'Deactivate' : 'Activate'}
                           </button>
                         )}
                       </div>
@@ -948,13 +969,15 @@ export function UsersView() {
         </div>
       )}
 
-      {/* Delete User Dialog */}
+      {/* Activate / Deactivate User Dialog */}
       {deletingUser && (
         <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="delete-user-title">
           <div className="modal-backdrop" onClick={() => setDeletingUser(null)} />
           <div className="modal-content modal-content-sm">
             <div className="modal-header">
-              <h2 id="delete-user-title" className="text-danger">⚠️ အသုံးပြုသူ ဖျက်သိမ်းရန် အတည်ပြုပါ</h2>
+              <h2 id="delete-user-title" className={deletingUser.active ? 'text-danger' : ''}>
+                {deletingUser.active ? 'Deactivate user?' : 'Activate user?'}
+              </h2>
               <button
                 type="button"
                 className="modal-close-btn"
@@ -966,22 +989,27 @@ export function UsersView() {
             </div>
             <div className="modal-body">
               <p>
-                အသုံးပြုသူ <b>"{deletingUser.displayName}"</b> ကို ဖျက်သိမ်းရန် သေချာပါသလား?
+                {deletingUser.active ? (
+                  <>
+                    Deactivate <b>"{deletingUser.displayName}"</b>? They will not be able to sign in.
+                  </>
+                ) : (
+                  <>
+                    Activate <b>"{deletingUser.displayName}"</b>? They will be able to sign in again.
+                  </>
+                )}
               </p>
-              <small className="text-muted">
-                ဤအကောင့်သည် Soft Delete စနစ်ဖြင့် ရပ်ဆိုင်းသွားမည် ဖြစ်ပါသည်။
-              </small>
             </div>
             <div className="modal-footer">
               <Button type="button" variant="ghost" onClick={() => setDeletingUser(null)}>
-                မလုပ်တော့ပါ (Cancel)
+                Cancel
               </Button>
               <button
                 type="button"
-                className="button danger-btn"
+                className={`button ${deletingUser.active ? 'danger-btn' : ''}`}
                 onClick={handleDeleteConfirm}
               >
-                သေချာပါသည်၊ ဖျက်မည် (Delete)
+                {deletingUser.active ? 'Deactivate' : 'Activate'}
               </button>
             </div>
           </div>

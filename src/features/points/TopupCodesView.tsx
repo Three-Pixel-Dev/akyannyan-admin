@@ -137,15 +137,15 @@ export function TopupCodesView() {
   return (
     <div className="page">
       <PageHeader
-        title="အမှတ်ဖြည့်ဘောက်ချာကုဒ်များ (Top-up Codes)"
-        description="မိုဘိုင်းအသုံးပြုသူများ အမှတ်ဖြည့်သွင်းနိုင်ရန် AKN-P- ဘောက်ချာကုဒ်များကို အစုလိုက် ထုတ်ဝေစီမံပါ။"
+        title="Top-up Codes"
+        description="Issue AKN-P- top-up codes so users can add points to their wallet."
         action={
           <div className="header-action-group">
             <Button variant="ghost" onClick={fetchCodes} disabled={loading}>
-              🔄 ပြန်စစ်မည်
+              🔄 Refresh
             </Button>
             <Button variant="gold" onClick={() => setIsGenerateModalOpen(true)}>
-              ⚡ ကုဒ်အသစ် ထုတ်ဝေမည်
+              ⚡ Issue Top-up Codes
             </Button>
           </div>
         }
@@ -154,27 +154,27 @@ export function TopupCodesView() {
       <div className="metrics">
         <Metric
           icon="🎫"
-          label="စုစုပေါင်း ဘောက်ချာကုဒ်"
-          value={`${totalItems || codes.length} ခု`}
-          detail="စနစ်တွင်း ထုတ်ဝေထားသော ကုဒ်များ"
+          label="TOTAL CODES"
+          value={`${totalItems || codes.length}`}
+          detail="Issued top-up codes"
         />
         <Metric
           icon="🟢"
-          label="အသုံးပြုနိုင်သော ကုဒ်များ"
-          value={`${activeCount} ခု`}
-          detail="အမှတ် ဖြည့်သွင်းရန် အသင့်ရှိ"
+          label="AVAILABLE"
+          value={`${activeCount}`}
+          detail="Ready to redeem"
         />
         <Metric
           icon="⭐"
-          label="ဖြည့်သွင်းပြီးသော ကုဒ်များ"
-          value={`${redeemedCount} ခု`}
-          detail="အသုံးပြုသူများ ထည့်သွင်းပြီး"
+          label="REDEEMED"
+          value={`${redeemedCount}`}
+          detail="Already used"
         />
         <Metric
           icon="🪙"
-          label="စုစုပေါင်း အမှတ်တန်ဖိုး"
+          label="TOTAL POINTS"
           value={`${totalPointsValue} pts`}
-          detail="ထုတ်ဝေထားသော အမှတ်စုစုပေါင်း"
+          detail="Points value issued"
         />
       </div>
 
@@ -228,12 +228,12 @@ export function TopupCodesView() {
             <table className="custom-table" aria-label="Topup codes table">
               <thead>
                 <tr>
-                  <th scope="col">ဘောက်ချာကုဒ် (Code)</th>
-                  <th scope="col">အမှတ်တန်ဖိုး (Points)</th>
-                  <th scope="col">အခြေအနေ (Status)</th>
-                  <th scope="col">ဖြည့်သွင်းသူ (Redeemed By)</th>
-                  <th scope="col">သက်တမ်းကုန်ရက် (Expires At)</th>
-                  <th scope="col" className="text-right">လုပ်ဆောင်ချက် (Actions)</th>
+                  <th scope="col">Top-up Code</th>
+                  <th scope="col">Points</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Redeemed By</th>
+                  <th scope="col">Expires At</th>
+                  <th scope="col" className="text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>

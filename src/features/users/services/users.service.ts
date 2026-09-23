@@ -34,6 +34,11 @@ export const usersService = {
     return response.data;
   },
 
+  async setUserActive(id: number, active: boolean): Promise<User> {
+    const response = await apiClient.put<User>(`${BASE_URL}/${id}/active`, { active });
+    return response.data;
+  },
+
   async deleteUser(id: number): Promise<void> {
     await apiClient.delete(`${BASE_URL}/${id}`);
   },

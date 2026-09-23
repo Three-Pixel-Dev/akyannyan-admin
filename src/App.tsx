@@ -36,17 +36,17 @@ interface NavItem {
 }
 
 const nav: NavItem[] = [
-  { id: 'dashboard', icon: '⌂', label: 'အနှစ်ချုပ် (Dashboard)' },
-  { id: 'member-levels', icon: '👑', label: 'အသင်းဝင် အဆင့်များ (Tiers)' },
-  { id: 'member-level-codes', icon: '🎟️', label: 'အဆင့်ကုဒ်များ (Codes)' },
-  { id: 'points-configs', icon: '⚙️', label: 'အမှတ်နှုန်းထားများ (Pricing)' },
-  { id: 'topup-codes', icon: '🎫', label: 'အမှတ်ဘောက်ချာများ (Top-up Codes)' },
-  { id: 'points-ledger', icon: '📜', label: 'အမှတ်စာရင်း (Ledger)' },
-  { id: 'users', icon: '◉', label: 'အသုံးပြုသူများ (Users)' },
-  { id: 'content', icon: '▤', label: 'အကြောင်းအရာ (Content)' },
+  { id: 'dashboard', icon: '⌂', label: 'Dashboard' },
+  { id: 'member-levels', icon: '👑', label: 'User Tiers' },
+  { id: 'member-level-codes', icon: '🎟️', label: 'User Codes' },
+  { id: 'points-configs', icon: '⚙️', label: 'Pricing' },
+  { id: 'topup-codes', icon: '🎫', label: 'Top-up Codes' },
+  { id: 'points-ledger', icon: '📜', label: 'User History' },
+  { id: 'users', icon: '◉', label: 'Users' },
+  { id: 'content', icon: '▤', label: 'Content' },
   { id: 'su-buu', icon: '🏺', label: 'ကံစုဘူး' },
   { id: 'oracle', icon: '✦', label: 'Oracle' },
-  { id: 'settings', icon: '⚙', label: 'ဆက်တင်များ (Settings)' },
+  { id: 'settings', icon: '⚙', label: 'Settings' },
 ];
 
 const VALID_VIEWS: View[] = [
@@ -269,15 +269,15 @@ function Dashboard({ setView }: { setView: (view: View) => void }) {
   return (
     <div className="page">
       <PageHeader
-        title="မင်္ဂလာပါ Admin 👋"
-        description="Akyannyan ၏ အသင်းဝင်အဆင့်များ၊ ဘောက်ချာကုဒ်များနှင့် ဗေဒင်/ဇာတာ ဝန်ဆောင်မှုများကို စီမံခန့်ခွဲပါ။"
+        title="Welcome, Admin 👋"
+        description="Manage user tiers, user codes, top-up codes, and divination services."
         action={
           <div className="header-action-group">
             <Button onClick={() => setView('member-level-codes')} variant="gold">
-              ⚡ ကုဒ်ထုတ်မည်
+              ⚡ Issue User Codes
             </Button>
             <Button onClick={() => setView('member-levels')} variant="jade">
-              👑 အသင်းဝင် အဆင့်များ
+              👑 User Tiers
             </Button>
           </div>
         }
@@ -356,10 +356,12 @@ function Dashboard({ setView }: { setView: (view: View) => void }) {
           <p className="eyebrow">QUICK ACTIONS</p>
           <h2>အမြန် လုပ်ဆောင်ရန်</h2>
           {[
-            ['👑', 'အသင်းဝင် အဆင့် စီမံမည်', () => setView('member-levels')],
-            ['🎟️', 'Voucher Code အသစ် ထုတ်မည်', () => setView('member-level-codes')],
-            ['🏺', 'ကံစုဘူး လအစီအစဉ်', () => setView('su-buu')],
-            ['☀', 'နေ့စဉ် ကံဇာတာ ပြင်မည်', () => setView('content')],
+            ['👑', 'Manage User Tiers', () => setView('member-levels')],
+            ['🎟️', 'Issue User Codes', () => setView('member-level-codes')],
+            ['🎫', 'Top-up Codes', () => setView('topup-codes')],
+            ['📜', 'User History', () => setView('points-ledger')],
+            ['🏺', 'ကံစုဘူး monthly plan', () => setView('su-buu')],
+            ['☀', 'Edit daily content', () => setView('content')],
           ].map(([icon, label, action]) => (
             <button
               key={label as string}

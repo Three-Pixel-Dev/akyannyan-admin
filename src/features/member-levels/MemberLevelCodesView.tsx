@@ -231,13 +231,13 @@ export function MemberLevelCodesView({ initialMemberLevelId }: MemberLevelCodesV
   return (
     <div className="page">
       <PageHeader
-        title="အဆင့်ကုဒ်များနှင့် ဘောက်ချာများ (Member Level Codes)"
-        description="အသုံးပြုသူများထံ ဖြန့်ဝေနိုင်သော Activation Codes များကို တစ်ခုချင်း (သို့) အစုလိုက် အမြန်ထုတ်ဝေပြီး စစ်ဆေးပါ။"
+        title="User Codes"
+        description="Issue and manage activation codes that assign a user tier on first login."
         action={
           <div className="header-action-group">
             {codes.length > 0 && (
               <Button onClick={handleCopyAllCodes} variant="ghost" aria-label="Copy all visible codes">
-                📋 စာရင်းအားလုံး Copy
+                📋 Copy All
               </Button>
             )}
             <Button
@@ -246,9 +246,9 @@ export function MemberLevelCodesView({ initialMemberLevelId }: MemberLevelCodesV
                 setGenerationError(null);
               }}
               variant="jade"
-              aria-label="Generate new member codes"
+              aria-label="Issue new user codes"
             >
-              ＋ ကုဒ် အသစ် ထုတ်မည်
+              ＋ Issue User Codes
             </Button>
           </div>
         }
@@ -260,25 +260,25 @@ export function MemberLevelCodesView({ initialMemberLevelId }: MemberLevelCodesV
           icon="🎟️"
           label="TOTAL CODES"
           value={totalItems.toString()}
-          detail="စနစ်ထဲရှိ ကုဒ် စုစုပေါင်း"
+          detail="All user codes in the system"
         />
         <Metric
           icon="🟢"
           label="AVAILABLE"
           value={codes.filter((c) => c.status === 'AVAILABLE').length.toString()}
-          detail="လက်ရှိ စာမျက်နှာတွင် အဆင်သင့်ရှိသော ကုဒ်များ"
+          detail="Ready to assign on this page"
         />
         <Metric
           icon="⭐"
           label="REDEEMED"
           value={codes.filter((c) => c.status === 'REDEEMED').length.toString()}
-          detail="အသုံးပြုသူများ အသက်သွင်းပြီးသော ကုဒ်များ"
+          detail="Already activated by users"
         />
         <Metric
           icon="⏳"
           label="EXPIRED"
           value={codes.filter((c) => c.status === 'EXPIRED').length.toString()}
-          detail="သက်တမ်းကုန်ဆုံးသွားသော ကုဒ်များ"
+          detail="Past expiry date"
         />
       </div>
 
@@ -287,7 +287,7 @@ export function MemberLevelCodesView({ initialMemberLevelId }: MemberLevelCodesV
         <div className="filter-toolbar">
           {/* Tier Dropdown */}
           <div className="filter-field">
-            <label htmlFor="filter-level">အသင်းဝင် အဆင့် (Tier):</label>
+            <label htmlFor="filter-level">User Tier:</label>
             <select
               id="filter-level"
               value={selectedLevelId || ''}
@@ -318,10 +318,10 @@ export function MemberLevelCodesView({ initialMemberLevelId }: MemberLevelCodesV
               }}
               className="form-select"
             >
-              <option value="ALL">အားလုံး (All Status)</option>
-              <option value="AVAILABLE">အဆင်သင့် (Available)</option>
-              <option value="REDEEMED">အသုံးပြုပြီး (Redeemed)</option>
-              <option value="EXPIRED">သက်တမ်းကုန် (Expired)</option>
+              <option value="ALL">All Status</option>
+              <option value="AVAILABLE">Available</option>
+              <option value="REDEEMED">Redeemed</option>
+              <option value="EXPIRED">Expired</option>
             </select>
           </div>
 
@@ -331,7 +331,7 @@ export function MemberLevelCodesView({ initialMemberLevelId }: MemberLevelCodesV
               type="text"
               value={codeSearch}
               onChange={(e) => setCodeSearch(e.target.value)}
-              placeholder="ကုဒ် ရှာရန် (Search Code)..."
+              placeholder="Search code..."
               aria-label="Search code"
             />
             {codeSearch && (
