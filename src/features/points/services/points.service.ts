@@ -22,6 +22,7 @@ export const adminPointsService = {
       isEnabled: item.isEnabled !== undefined ? item.isEnabled : (item.isEnable ?? true),
       description: item.description || '',
       category: item.category || (
+        item.featureKey?.includes('ORACLE') ? 'ORACLE' :
         item.featureKey?.includes('TAROT') ? 'TAROT' :
         item.featureKey?.includes('HORARY') || item.featureKey?.includes('KP') ? 'HORARY' :
         item.featureKey?.includes('DAY') ? 'CALENDAR' :

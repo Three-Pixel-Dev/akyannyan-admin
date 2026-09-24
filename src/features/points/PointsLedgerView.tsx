@@ -155,7 +155,6 @@ export function PointsLedgerView() {
                   <th scope="col">အမျိုးအစား (Type)</th>
                   <th scope="col">ပမာဏ (Points)</th>
                   <th scope="col">ဝန်ဆောင်မှု/အဆင့် (Feature)</th>
-                  <th scope="col">လက်ကျန် (Balance)</th>
                   <th scope="col">မှတ်ချက် (Note)</th>
                 </tr>
               </thead>
@@ -189,13 +188,6 @@ export function PointsLedgerView() {
                       <td>
                         {featureOrRef ? (
                           <code className="code-pill">{featureOrRef}</code>
-                        ) : (
-                          <span style={{ color: 'var(--text-muted)' }}>—</span>
-                        )}
-                      </td>
-                      <td>
-                        {tx.balanceAfter !== undefined && tx.balanceAfter !== null ? (
-                          <b style={{ color: 'var(--gold, #e8b54d)' }}>{tx.balanceAfter} pts</b>
                         ) : (
                           <span style={{ color: 'var(--text-muted)' }}>—</span>
                         )}

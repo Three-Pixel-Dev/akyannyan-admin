@@ -18,6 +18,7 @@ export function OracleView() {
   const [contentInput, setContentInput] = useState('');
   const [activeInput, setActiveInput] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const [testQuery, setTestQuery] = useState('');
   const [testOutput, setTestOutput] = useState<string | null>(null);
@@ -40,9 +41,7 @@ export function OracleView() {
     loadTemplates();
   }, []);
 
-  const handleEditClick = (t: OracleTemplate) => {
-    setCreating(false);
-    setEditingTemplate(t);
+  const fillForm = (t: OracleTemplate) => {
     setTitleInput(t.title);
     setModelInput(t.model);
     setTempInput(t.temperature);
@@ -50,9 +49,43 @@ export function OracleView() {
     setActiveInput(t.isActive);
   };
 
+  const closeFormModal = () => {
+    setEditingTemplate(null);
+    setCreating(false);
+    setSaving(false);
+  };
+
+  const handleEditClick = (t: OracleTemplate) => {
+    setCreating(false);
+    setEditingTemplate(t);
+    fillForm(t);
+  };
+
+  const handleNewClick = () => {
+    const draft: OracleTemplate = {
+      id: -1,
+      code: '',
+      icon: '📝',
+      title: 'Template အသစ်',
+      category: 'SYSTEM',
+      model: 'gemini-flash-lite-latest',
+      temperature: 0.7,
+      maxTokens: 1024,
+      description: 'အသစ်ဖန်တီးထားသော ပုံစံခွက်',
+      content: 'အသစ်ထည့်သွင်းမည့် စနစ် Prompt သို့မဟုတ် စည်းမျဉ်း...',
+      active: true,
+      isActive: true,
+      updatedAt: new Date().toISOString(),
+    };
+    setCreating(true);
+    setEditingTemplate(draft);
+    fillForm(draft);
+  };
+
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingTemplate) return;
+    if (!editingTemplate || saving) return;
+    setSaving(true);
     try {
       if (creating || !editingTemplate.id || editingTemplate.id < 0) {
         const created = await adminOracleService.create({
@@ -68,7 +101,7 @@ export function OracleView() {
           active: activeInput,
         });
         showToast(`'${titleInput}' ကို ဖန်တီးပြီးပါပြီ။`, 'success');
-        setTemplates((prev) => [toOracleTemplate(created), ...prev.filter((t) => t.id !== editingTemplate.id)]);
+        setTemplates((prev) => [toOracleTemplate(created), ...prev]);
       } else {
         const updated = await adminOracleService.update(editingTemplate.id, {
           category: editingTemplate.category,
@@ -86,10 +119,10 @@ export function OracleView() {
           prev.map((t) => (t.id === editingTemplate.id ? toOracleTemplate(updated) : t)),
         );
       }
-      setEditingTemplate(null);
-      setCreating(false);
+      closeFormModal();
     } catch (err: any) {
       showToast(err?.message || 'သိမ်း၍ မရပါ', 'error');
+      setSaving(false);
     }
   };
 
@@ -142,29 +175,7 @@ export function OracleView() {
         title="🔮 Oracle AI စနစ် စီမံခန့်ခွဲမှု (Oracle AI Engine)"
         description="Oracle တုံ့ပြန်မှု စည်းမျဉ်းများ (System Prompts)၊ နေ့စဉ် အမေးပုစ္ဆာ ကန့်သတ်ချက် (Quotas) နှင့် အကာအကွယ် စည်းမျဉ်းများ (Safety Boundaries) ကို ပြင်ဆင်ပါ။"
         action={
-          <Button
-            variant="jade"
-            onClick={() => {
-              const newT: OracleTemplate = {
-                id: -Date.now(),
-                code: '',
-                icon: '📝',
-                title: 'Template အသစ်',
-                category: 'SYSTEM',
-                model: 'gemini-flash-lite-latest',
-                temperature: 0.7,
-                maxTokens: 1024,
-                description: 'အသစ်ဖန်တီးထားသော ပုံစံခွက်',
-                content: 'အသစ်ထည့်သွင်းမည့် စနစ် Prompt သို့မဟုတ် စည်းမျဉ်း...',
-                active: true,
-                isActive: true,
-                updatedAt: new Date().toISOString(),
-              };
-              setCreating(true);
-              setTemplates((prev) => [newT, ...prev]);
-              handleEditClick(newT);
-            }}
-          >
+          <Button variant="jade" onClick={handleNewClick}>
             ＋ Template အသစ်
           </Button>
         }
@@ -273,63 +284,89 @@ export function OracleView() {
       </Card>
 
       {editingTemplate ? (
-        <Card className="resource-card" style={{ marginBottom: '24px' }}>
-          <h3 style={{ marginTop: 0 }}>Prompt ပြင်ဆင်ခြင်း</h3>
-          <form onSubmit={handleSaveEdit} style={{ display: 'grid', gap: 12 }}>
-            <label style={{ display: 'grid', gap: 4, fontSize: 13 }}>
-              Title
-              <input value={titleInput} onChange={(e) => setTitleInput(e.target.value)} required />
-            </label>
-            <label style={{ display: 'grid', gap: 4, fontSize: 13 }}>
-              Model
-              <input value={modelInput} onChange={(e) => setModelInput(e.target.value)} />
-            </label>
-            <label style={{ display: 'grid', gap: 4, fontSize: 13 }}>
-              Temperature
-              <input
-                type="number"
-                step="0.1"
-                min="0"
-                max="2"
-                value={tempInput}
-                onChange={(e) => setTempInput(Number(e.target.value))}
-              />
-            </label>
-            <label style={{ display: 'grid', gap: 4, fontSize: 13 }}>
-              Content
-              <textarea
-                rows={10}
-                value={contentInput}
-                onChange={(e) => setContentInput(e.target.value)}
-                required
-              />
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
-              <input
-                type="checkbox"
-                checked={activeInput}
-                onChange={(e) => setActiveInput(e.target.checked)}
-              />
-              Active
-            </label>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <Button type="submit" variant="jade">
-                သိမ်းမည်
-              </Button>
-              <Button
+        <div
+          className="modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="oracle-prompt-modal-title"
+        >
+          <div className="modal-backdrop" onClick={() => !saving && closeFormModal()} />
+          <div className="modal-content" style={{ maxWidth: '720px' }}>
+            <div className="modal-header">
+              <h2 id="oracle-prompt-modal-title">
+                {creating ? '＋ Template အသစ်' : 'Prompt ပြင်ဆင်ခြင်း'}
+              </h2>
+              <button
                 type="button"
-                variant="ghost"
-                onClick={() => {
-                  setEditingTemplate(null);
-                  setCreating(false);
-                  loadTemplates();
-                }}
+                className="modal-close-btn"
+                onClick={() => !saving && closeFormModal()}
+                aria-label="Close dialog"
+                disabled={saving}
               >
-                ပယ်ဖျက်
-              </Button>
+                ×
+              </button>
             </div>
-          </form>
-        </Card>
+            <form onSubmit={handleSaveEdit} className="modal-form">
+              <label style={{ display: 'grid', gap: 4, fontSize: 13 }}>
+                Title
+                <input
+                  value={titleInput}
+                  onChange={(e) => setTitleInput(e.target.value)}
+                  required
+                  disabled={saving}
+                />
+              </label>
+              <label style={{ display: 'grid', gap: 4, fontSize: 13 }}>
+                Model
+                <input
+                  value={modelInput}
+                  onChange={(e) => setModelInput(e.target.value)}
+                  disabled={saving}
+                />
+              </label>
+              <label style={{ display: 'grid', gap: 4, fontSize: 13 }}>
+                Temperature
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="2"
+                  value={tempInput}
+                  onChange={(e) => setTempInput(Number(e.target.value))}
+                  disabled={saving}
+                />
+              </label>
+              <label style={{ display: 'grid', gap: 4, fontSize: 13 }}>
+                Content
+                <textarea
+                  rows={12}
+                  value={contentInput}
+                  onChange={(e) => setContentInput(e.target.value)}
+                  required
+                  disabled={saving}
+                  style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 12.5 }}
+                />
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
+                <input
+                  type="checkbox"
+                  checked={activeInput}
+                  onChange={(e) => setActiveInput(e.target.checked)}
+                  disabled={saving}
+                />
+                Active
+              </label>
+              <div className="modal-footer">
+                <Button type="button" variant="ghost" onClick={closeFormModal} disabled={saving}>
+                  ပယ်ဖျက်
+                </Button>
+                <Button type="submit" variant="jade" disabled={saving}>
+                  {saving ? 'သိမ်းနေသည်…' : 'သိမ်းမည်'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
       ) : null}
 
       <Card className="resource-card">

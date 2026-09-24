@@ -115,6 +115,17 @@ const DEFAULT_CONFIGS: PointsConfig[] = [
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
+  {
+    id: 10,
+    featureKey: 'ORACLE_EXTRA',
+    featureName: 'Oracle မေးခွန်း (ကန့်သတ်ချက်ကျော်)',
+    costPoints: 5,
+    isEnabled: true,
+    description: 'နေ့စဉ် Oracle quota ကုန်ပြီးနောက် အပိုမေးခွန်း တစ်ခုလျှင် အမှတ်ဖြတ်ခြင်း',
+    category: 'ORACLE',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
 ];
 
 export function PointsConfigsView() {
@@ -331,6 +342,7 @@ export function PointsConfigsView() {
               <option value="TAROT">တာရော့ (Tarot)</option>
               <option value="ANALYSIS">ဗေဒင်ပညာရှင်စုံ (BPZ)</option>
               <option value="REMEDY">ယတြာ အစီအရင် (Remedy)</option>
+              <option value="ORACLE">Oracle</option>
             </select>
 
             <Button variant="ghost" onClick={loadConfigs} disabled={loading} style={{ padding: '9px 14px' }}>
