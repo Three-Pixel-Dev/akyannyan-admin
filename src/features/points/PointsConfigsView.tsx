@@ -4,130 +4,6 @@ import { showToast } from '../../components/Toast';
 import { adminPointsService } from './services/points.service';
 import type { PointsConfig, PointsConfigUpdateRequest } from './types/points.types';
 
-const DEFAULT_CONFIGS: PointsConfig[] = [
-  {
-    id: 1,
-    featureKey: 'YEARLY_CHART_EXTERNAL',
-    featureName: 'နှစ်ချုပ် မဟာဘုတ် ဇာတာတွက်ချက်ခြင်း',
-    costPoints: 20,
-    isEnabled: true,
-    description: 'အခြားသူများအတွက် တစ်နှစ်စာ မဟာဘုတ်နှင့် ဂြိုဟ်အသွားအလာ ဇာတာ အသေးစိတ်တွက်ချက်ခြင်း',
-    category: 'ASTROLOGY',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 2,
-    featureKey: 'KP_HORARY_EXTERNAL',
-    featureName: 'KP ဟူးရား အမေးပုစ္ဆာ တွက်ချက်ခြင်း',
-    costPoints: 10,
-    isEnabled: true,
-    description: 'နက္ခတ်နှင့် သဗ္ဗဒိသာ ၁-၂၄၉ ဂဏန်းရွေးချယ်မှုဖြင့် အမေးပုစ္ဆာ အဖြေထုတ်ခြင်း',
-    category: 'HORARY',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 3,
-    featureKey: 'DAY_PICK_EXTERNAL',
-    featureName: 'ရက်ရာဇာ/ပြဿဒါး အခါပေး ရွေးချယ်ခြင်း',
-    costPoints: 10,
-    isEnabled: true,
-    description: 'မင်္ဂလာအခါ၊ အိမ်တက်အခါ၊ ခရီးထွက်အခါ စသည့် အခါကောင်းရက်မြတ်များ တွက်ချက်ပေးခြင်း',
-    category: 'CALENDAR',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 4,
-    featureKey: 'TRANSIT_EXTERNAL',
-    featureName: 'Western ဂြိုဟ်ကူးပြောင်းမှု (Tropical Transit)',
-    costPoints: 15,
-    isEnabled: true,
-    description: 'Tropical Zodiac၊ natal aspects၊ applying/separating နှင့် လာမည့် ၃၀ ရက် exact hits',
-    category: 'ASTROLOGY',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 5,
-    featureKey: 'COMPATIBILITY_PAIR',
-    featureName: 'နှစ်ဦးဇာတာ လိုက်ဖက်ညီမှု တွက်ချက်ခြင်း',
-    costPoints: 10,
-    isEnabled: true,
-    description: 'အိမ်ထောင်ဖက်၊ စီးပွားဖက် သို့မဟုတ် ချစ်သူနှစ်ဦး၏ ဓာတ်၊ နက္ခတ်၊ မဟာဘုတ် လိုက်ဖက်ညီမှု',
-    category: 'COMPATIBILITY',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-	{
-		id: 6,
-		featureKey: 'TAROT_SPREAD_3_CARD',
-		featureName: 'တာရော့ (Tarot) ၃ ကတ် ဟောစာတမ်း',
-		costPoints: 5,
-		isEnabled: true,
-		description: 'အတိတ်၊ ပစ္စုပ္ပန်၊ အနာဂတ် ၃ ကတ်တွဲ တာရော့နိမိတ်ဖတ်ကြားချက်',
-		category: 'TAROT',
-		createdAt: new Date().toISOString(),
-		updatedAt: new Date().toISOString(),
-	},
-	{
-		id: 16,
-		featureKey: 'TAROT_SPREAD_5_CARD',
-		featureName: 'တာရော့ (Tarot) ၅ ကတ် မေးခွန်းဖြန့်ခြင်း',
-		costPoints: 8,
-		isEnabled: true,
-		description: 'အခြေအနေ၊ အခက်အခဲ၊ အကြောင်းရင်း၊ အကြံ၊ အကျိုးဆက် ၅ ကတ်တွဲ',
-		category: 'TAROT',
-		createdAt: new Date().toISOString(),
-		updatedAt: new Date().toISOString(),
-	},
-  {
-    id: 7,
-    featureKey: 'BPZ_DECISION_ANALYSIS',
-    featureName: 'ဗေဒင်ပညာရှင်စုံ (BPZ) ဘက်စုံသုံးသပ်ချက်',
-    costPoints: 15,
-    isEnabled: true,
-    description: 'အရေးကြီးသော ဘဝဆုံးဖြတ်ချက်များအတွက် မဟာဘုတ်၊ နက္ခတ်နှင့် တာရော့ ပေါင်းစပ်သုံးသပ်ချက်',
-    category: 'ANALYSIS',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 8,
-    featureKey: 'LIFETIME_CHART_EXTERNAL',
-    featureName: 'တစ်သက်စာ ဟောစာတမ်း (အခြားသူအတွက်)',
-    costPoints: 30,
-    isEnabled: true,
-    description: 'မွေးချက်ကောင်းကင်နှင့် မွေးမဟာဘုတ်အိမ်ဖြင့် တစ်သက်စာ ဟောစာတမ်း',
-    category: 'ASTROLOGY',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 9,
-    featureKey: 'AI_DEEP_REMEDY_STAGE',
-    featureName: 'နတ်မင်းကြီးများ ယတြာနှင့် အစီအရင် အဆင့်',
-    costPoints: 5,
-    isEnabled: true,
-    description: 'ဂြိုဟ်စီးဂြိုဟ်နင်း ညံ့နေချိန်များတွင် ပြုလုပ်ရမည့် အစီအရင်နှင့် ယတြာ အညွှန်း',
-    category: 'REMEDY',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 10,
-    featureKey: 'ORACLE_EXTRA',
-    featureName: 'Oracle မေးခွန်း (ကန့်သတ်ချက်ကျော်)',
-    costPoints: 5,
-    isEnabled: true,
-    description: 'နေ့စဉ် Oracle quota ကုန်ပြီးနောက် အပိုမေးခွန်း တစ်ခုလျှင် အမှတ်ဖြတ်ခြင်း',
-    category: 'ORACLE',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
-
 export function PointsConfigsView() {
   const [configs, setConfigs] = useState<PointsConfig[]>([]);
   const [loading, setLoading] = useState(true);
@@ -143,14 +19,13 @@ export function PointsConfigsView() {
     setLoading(true);
     try {
       const data = await adminPointsService.getConfigs();
-      if (data && data.length > 0) {
-        setConfigs(data);
-      } else {
-        setConfigs(DEFAULT_CONFIGS);
+      setConfigs(data ?? []);
+      if (!data?.length) {
+        showToast('Pricing configs မရှိသေးပါ (API empty)', 'info');
       }
     } catch (err: any) {
-      console.warn('Failed to fetch from backend, using defaults:', err.message);
-      setConfigs(DEFAULT_CONFIGS);
+      setConfigs([]);
+      showToast(err?.message || 'Pricing configs ရယူ၍ မရပါ', 'error');
     } finally {
       setLoading(false);
     }

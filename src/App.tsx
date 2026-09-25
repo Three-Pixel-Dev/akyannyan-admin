@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Button, Card, LogoMark, Metric, PageHeader, Status } from './components/ui';
+import { Card, LogoMark } from './components/ui';
 import { ToastContainer, showToast } from './components/Toast';
-import { content, metrics, users } from './data/mock';
 import { authService, type AdminUser } from './features/auth/services/auth.service';
 import { SignIn } from './features/auth/SignIn';
 import { MemberLevelsView } from './features/member-levels/MemberLevelsView';
@@ -13,7 +12,7 @@ import { PointsLedgerView } from './features/points/PointsLedgerView';
 import { OracleView } from './features/oracle/OracleView';
 import { ContentView } from './features/content/ContentView';
 import { MeritView } from './features/merit/MeritView';
-import { SettingsView } from './features/settings/SettingsView';
+import { DashboardView } from './features/dashboard/DashboardView';
 
 export type View =
   | 'dashboard'
@@ -25,14 +24,12 @@ export type View =
   | 'users'
   | 'content'
   | 'su-buu'
-  | 'oracle'
-  | 'settings';
+  | 'oracle';
 
 interface NavItem {
   id: View;
   icon: string;
   label: string;
-  badge?: string;
 }
 
 const nav: NavItem[] = [
@@ -46,7 +43,6 @@ const nav: NavItem[] = [
   { id: 'content', icon: '▤', label: 'Content' },
   { id: 'su-buu', icon: '🏺', label: 'ကံစုဘူး' },
   { id: 'oracle', icon: '✦', label: 'Oracle' },
-  { id: 'settings', icon: '⚙', label: 'Settings' },
 ];
 
 const VALID_VIEWS: View[] = [
@@ -60,13 +56,12 @@ const VALID_VIEWS: View[] = [
   'content',
   'su-buu',
   'oracle',
-  'settings',
 ];
 
 function getViewFromPath(): View {
   if (typeof window === 'undefined') return 'dashboard';
   const rawPath = window.location.pathname.replace(/^\/+/, '').split('/')[0];
-  if (rawPath === '' || rawPath === 'dashboard') {
+  if (rawPath === '' || rawPath === 'dashboard' || rawPath === 'settings') {
     return 'dashboard';
   }
   if (VALID_VIEWS.includes(rawPath as View)) {
@@ -104,7 +99,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    // If user is at a valid subpath on initial load, ensure URL is cleanly aligned
     const currentView = getViewFromPath();
     const expectedPath = currentView === 'dashboard' ? '/' : `/${currentView}`;
     if (window.location.pathname !== expectedPath && window.location.pathname !== '/dashboard') {
@@ -122,7 +116,6 @@ export default function App() {
     window.addEventListener('auth-change', handleAuthChange);
     window.addEventListener('storage', handleAuthChange);
 
-    // Initial session verification
     if (authService.isAuthenticated()) {
       authService.fetchCurrentUser().then((user) => {
         if (user) setCurrentUser(user);
@@ -147,7 +140,6 @@ export default function App() {
     navigateToView('member-level-codes');
   };
 
-  // If not authenticated, display the Akyannyan Admin SignIn view
   if (!isAuthenticated) {
     return (
       <>
@@ -161,7 +153,6 @@ export default function App() {
     <div className="app-shell">
       <ToastContainer />
 
-      {/* Sidebar Navigation */}
       <aside className={`sidebar ${mobileMenuOpen ? 'open' : ''}`}>
         <div className="brand">
           <LogoMark />
@@ -207,9 +198,7 @@ export default function App() {
         </div>
       </aside>
 
-      {/* Main Content Area */}
       <main>
-        {/* Topbar */}
         <header className="topbar">
           <div className="topbar-left">
             <button
@@ -219,7 +208,6 @@ export default function App() {
             >
               ☰
             </button>
-            <span className="topbar-badge">● System Online</span>
           </div>
 
           <div className="top-actions">
@@ -244,8 +232,7 @@ export default function App() {
           </div>
         </header>
 
-        {/* View Router */}
-        {view === 'dashboard' && <Dashboard setView={navigateToView} />}
+        {view === 'dashboard' && <DashboardView setView={navigateToView} />}
         {view === 'member-levels' && (
           <MemberLevelsView onNavigateToCodes={handleNavigateToCodes} />
         )}
@@ -259,123 +246,7 @@ export default function App() {
         {view === 'oracle' && <OracleView />}
         {view === 'content' && <ContentView />}
         {view === 'su-buu' && <MeritView />}
-        {view === 'settings' && <SettingsView />}
       </main>
     </div>
   );
 }
-
-function Dashboard({ setView }: { setView: (view: View) => void }) {
-  return (
-    <div className="page">
-      <PageHeader
-        title="Welcome, Admin 👋"
-        description="Manage user tiers, user codes, top-up codes, and divination services."
-        action={
-          <div className="header-action-group">
-            <Button onClick={() => setView('member-level-codes')} variant="gold">
-              ⚡ Issue User Codes
-            </Button>
-            <Button onClick={() => setView('member-levels')} variant="jade">
-              👑 User Tiers
-            </Button>
-          </div>
-        }
-      />
-
-      <div className="metrics">
-        {metrics.map(([icon, label, value, detail]) => (
-          <Metric key={label} icon={icon} label={label} value={value} detail={detail} />
-        ))}
-      </div>
-
-      <div className="dashboard-grid">
-        <Card className="wide-card">
-          <div className="card-heading">
-            <div>
-              <p className="eyebrow">ဒီအပတ်</p>
-              <h2>အသုံးပြုသူ လှုပ်ရှားမှု</h2>
-            </div>
-            <select aria-label="Date range">
-              <option>လွန်ခဲ့သော ၇ ရက်</option>
-              <option>လွန်ခဲ့သော ၃၀ ရက်</option>
-            </select>
-          </div>
-          <div className="chart" aria-label="Weekly activity chart">
-            {[35, 48, 42, 67, 55, 82, 73].map((height, index) => (
-              <div className="chart-bar" key={height}>
-                <i style={{ height: `${height}%` }} />
-                <span>{['တန', 'လာ', 'ဂါ', 'ဗုဒ္ဓ', 'ကြာ', 'သော', 'စနေ'][index]}</span>
-              </div>
-            ))}
-          </div>
-          <div className="chart-legend">
-            <span><i className="dot jade" />Active users</span>
-            <span><i className="dot gold" />Oracle questions</span>
-          </div>
-        </Card>
-
-        <Card className="ritual-card">
-          <span className="ritual-icon">🏺</span>
-          <p className="eyebrow">DAILY RITUAL</p>
-          <h2>ကံစုဘူး</h2>
-          <strong>74%</strong>
-          <p>ယနေ့ ကုသိုလ်အလေ့အကျင့် ပြီးစီးမှု</p>
-          <div className="progress">
-            <i />
-          </div>
-          <span className="hint">1,846 / 2,494 users</span>
-        </Card>
-
-        <Card className="wide-card table-card">
-          <div className="card-heading">
-            <div>
-              <p className="eyebrow">RECENTLY ACTIVE</p>
-              <h2>အသုံးပြုသူအသစ်များ</h2>
-            </div>
-            <button className="link-button" onClick={() => setView('users')}>
-              အားလုံးကြည့်ရန် ›
-            </button>
-          </div>
-          <div className="table">
-            {users.map(([name, detail, plan, last]) => (
-              <div className="table-row" key={name}>
-                <span className="person-avatar">{name.slice(0, 1)}</span>
-                <div className="user-detail">
-                  <b>{name}</b>
-                  <small>{detail}</small>
-                </div>
-                <Status tone={plan === 'Premium' ? 'gold' : 'jade'}>{plan}</Status>
-                <time>{last}</time>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        <Card className="quick-card">
-          <p className="eyebrow">QUICK ACTIONS</p>
-          <h2>အမြန် လုပ်ဆောင်ရန်</h2>
-          {[
-            ['👑', 'Manage User Tiers', () => setView('member-levels')],
-            ['🎟️', 'Issue User Codes', () => setView('member-level-codes')],
-            ['🎫', 'Top-up Codes', () => setView('topup-codes')],
-            ['📜', 'User History', () => setView('points-ledger')],
-            ['🏺', 'ကံစုဘူး monthly plan', () => setView('su-buu')],
-            ['☀', 'Edit daily content', () => setView('content')],
-          ].map(([icon, label, action]) => (
-            <button
-              key={label as string}
-              className="quick-action"
-              onClick={action as () => void}
-            >
-              <span>{icon as string}</span>
-              {label as string}
-              <b>›</b>
-            </button>
-          ))}
-        </Card>
-      </div>
-    </div>
-  );
-}
-
