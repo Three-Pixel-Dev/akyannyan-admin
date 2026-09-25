@@ -14,6 +14,7 @@ import { OracleView } from './features/oracle/OracleView';
 import { ContentView } from './features/content/ContentView';
 import { MeritView } from './features/merit/MeritView';
 import { SettingsView } from './features/settings/SettingsView';
+import { NotificationsView } from './features/notifications/NotificationsView';
 
 export type View =
   | 'dashboard'
@@ -26,6 +27,7 @@ export type View =
   | 'content'
   | 'su-buu'
   | 'oracle'
+  | 'notifications'
   | 'settings';
 
 interface NavItem {
@@ -46,6 +48,7 @@ const nav: NavItem[] = [
   { id: 'content', icon: '▤', label: 'Content' },
   { id: 'su-buu', icon: '🏺', label: 'ကံစုဘူး' },
   { id: 'oracle', icon: '✦', label: 'Oracle' },
+  { id: 'notifications', icon: '🔔', label: 'Notifications' },
   { id: 'settings', icon: '⚙', label: 'Settings' },
 ];
 
@@ -60,6 +63,7 @@ const VALID_VIEWS: View[] = [
   'content',
   'su-buu',
   'oracle',
+  'notifications',
   'settings',
 ];
 
@@ -259,6 +263,7 @@ export default function App() {
         {view === 'oracle' && <OracleView />}
         {view === 'content' && <ContentView />}
         {view === 'su-buu' && <MeritView />}
+        {view === 'notifications' && <NotificationsView />}
         {view === 'settings' && <SettingsView />}
       </main>
     </div>
@@ -361,6 +366,7 @@ function Dashboard({ setView }: { setView: (view: View) => void }) {
             ['🎫', 'Top-up Codes', () => setView('topup-codes')],
             ['📜', 'User History', () => setView('points-ledger')],
             ['🏺', 'ကံစုဘူး monthly plan', () => setView('su-buu')],
+            ['🔔', 'Send notifications', () => setView('notifications')],
             ['☀', 'Edit daily content', () => setView('content')],
           ].map(([icon, label, action]) => (
             <button
