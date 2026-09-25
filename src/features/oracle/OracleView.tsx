@@ -17,12 +17,7 @@ export function OracleView() {
   const [tempInput, setTempInput] = useState(0.7);
   const [contentInput, setContentInput] = useState('');
   const [activeInput, setActiveInput] = useState(true);
-  const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
-
-  const [testQuery, setTestQuery] = useState('');
-  const [testOutput, setTestOutput] = useState<string | null>(null);
-  const [simulating, setSimulating] = useState(false);
 
   const loadTemplates = async () => {
     setLoading(true);
@@ -51,74 +46,34 @@ export function OracleView() {
 
   const closeFormModal = () => {
     setEditingTemplate(null);
-    setCreating(false);
     setSaving(false);
   };
 
   const handleEditClick = (t: OracleTemplate) => {
-    setCreating(false);
     setEditingTemplate(t);
     fillForm(t);
   };
 
-  const handleNewClick = () => {
-    const draft: OracleTemplate = {
-      id: -1,
-      code: '',
-      icon: '📝',
-      title: 'Template အသစ်',
-      category: 'SYSTEM',
-      model: 'gemini-flash-lite-latest',
-      temperature: 0.7,
-      maxTokens: 1024,
-      description: 'အသစ်ဖန်တီးထားသော ပုံစံခွက်',
-      content: 'အသစ်ထည့်သွင်းမည့် စနစ် Prompt သို့မဟုတ် စည်းမျဉ်း...',
-      active: true,
-      isActive: true,
-      updatedAt: new Date().toISOString(),
-    };
-    setCreating(true);
-    setEditingTemplate(draft);
-    fillForm(draft);
-  };
-
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingTemplate || saving) return;
+    if (!editingTemplate || saving || !editingTemplate.id || editingTemplate.id < 0) return;
     setSaving(true);
     try {
-      if (creating || !editingTemplate.id || editingTemplate.id < 0) {
-        const created = await adminOracleService.create({
-          code: `template_${Date.now()}`,
-          category: editingTemplate.category,
-          icon: editingTemplate.icon || '📝',
-          title: titleInput,
-          model: modelInput,
-          temperature: tempInput,
-          maxTokens: editingTemplate.maxTokens || 2048,
-          description: editingTemplate.description,
-          content: contentInput,
-          active: activeInput,
-        });
-        showToast(`'${titleInput}' ကို ဖန်တီးပြီးပါပြီ။`, 'success');
-        setTemplates((prev) => [toOracleTemplate(created), ...prev]);
-      } else {
-        const updated = await adminOracleService.update(editingTemplate.id, {
-          category: editingTemplate.category,
-          icon: editingTemplate.icon,
-          title: titleInput,
-          model: modelInput,
-          temperature: tempInput,
-          maxTokens: editingTemplate.maxTokens,
-          description: editingTemplate.description,
-          content: contentInput,
-          active: activeInput,
-        });
-        showToast(`'${titleInput}' ကို အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ။`, 'success');
-        setTemplates((prev) =>
-          prev.map((t) => (t.id === editingTemplate.id ? toOracleTemplate(updated) : t)),
-        );
-      }
+      const updated = await adminOracleService.update(editingTemplate.id, {
+        category: editingTemplate.category,
+        icon: editingTemplate.icon,
+        title: titleInput,
+        model: modelInput,
+        temperature: tempInput,
+        maxTokens: editingTemplate.maxTokens,
+        description: editingTemplate.description,
+        content: contentInput,
+        active: activeInput,
+      });
+      showToast(`'${titleInput}' ကို အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ။`, 'success');
+      setTemplates((prev) =>
+        prev.map((t) => (t.id === editingTemplate.id ? toOracleTemplate(updated) : t)),
+      );
       closeFormModal();
     } catch (err: any) {
       showToast(err?.message || 'သိမ်း၍ မရပါ', 'error');
@@ -148,58 +103,31 @@ export function OracleView() {
     }
   };
 
-  const handleRunSimulation = () => {
-    if (!testQuery.trim()) {
-      showToast('စမ်းသပ်ရန် မေးခွန်းတစ်ခု ရိုက်ထည့်ပါ', 'error');
-      return;
-    }
-    setSimulating(true);
-    setTestOutput(null);
-    setTimeout(() => {
-      setSimulating(false);
-      setTestOutput(
-        `[Oracle AI တုံ့ပြန်ချက် — Model: ${modelInput || 'gemini-flash-lite-latest'}]\n\n` +
-          `မင်္ဂလာပါရှင်။ သင်၏ မေးမြန်းချက် ("${testQuery}") အတွက် မဟာဘုတ်နှင့် နက္ခတ်အခြေအနေများကို လေ့လာဆန်းစစ်ရာတွင် ယခုကာလသည် ကြိုးစားအားထုတ်မှုများ အောင်မြင်လွယ်သော အချိန်အခါဖြစ်ကြောင်း တွေ့ရှိရပါသည်။\n\n` +
-          `အကြံပြုချက်: ကြီးမားသော ဆုံးဖြတ်ချက်များ မချမီ စိတ်အေးချမ်းစွာ သုံးသပ်ပြီး သောကြာ/တနင်္ဂနွေ ရက်များတွင် သက်ကြီးရွယ်အိုများကို ကူညီကုသိုလ်ပြုခြင်းဖြင့် ကံဇာတာ ပိုမိုအားကောင်းလာနိုင်ပါသည်။`,
-      );
-    }, 700);
-  };
-
   const filtered = templates.filter(
     (t) => selectedCategory === 'ALL' || t.category === selectedCategory,
   );
 
+  const activeCount = templates.filter((t) => t.isActive).length;
+
   return (
     <div className="page">
       <PageHeader
-        title="🔮 Oracle AI စနစ် စီမံခန့်ခွဲမှု (Oracle AI Engine)"
-        description="Oracle တုံ့ပြန်မှု စည်းမျဉ်းများ (System Prompts)၊ နေ့စဉ် အမေးပုစ္ဆာ ကန့်သတ်ချက် (Quotas) နှင့် အကာအကွယ် စည်းမျဉ်းများ (Safety Boundaries) ကို ပြင်ဆင်ပါ။"
-        action={
-          <Button variant="jade" onClick={handleNewClick}>
-            ＋ Template အသစ်
-          </Button>
-        }
+        title="🔮 Oracle AI စနစ် စီမံခန့်ခွဲမှု"
+        description="Oracle system prompts ကို API မှ တိုက်ရိုက် ပြင်ဆင်ပါ။"
       />
 
       <div className="metrics">
         <Metric
-          icon="🤖"
-          label="AI ENGINE"
-          value="Gemini"
-          detail="Google Generative AI ပင်မအင်ဂျင်"
-        />
-        <Metric
           icon="📜"
           label="ACTIVE TEMPLATES"
-          value={`${templates.filter((t) => t.isActive).length} ခု`}
-          detail="စနစ်တွင်း အသုံးပြုနေသော Prompts"
+          value={loading ? '…' : `${activeCount} ခု`}
+          detail={`${templates.length} total prompts (API)`}
         />
-        <Metric icon="💬" label="DAILY QUOTA" value="3 / 50" detail="Free / Premium (server)" />
         <Metric
-          icon="🛡️"
-          label="SAFETY RULES"
-          value="တင်းကြပ်စွာ (Active)"
-          detail="ကျန်းမာရေးနှင့် လောင်းကစား ကန့်သတ်"
+          icon="📂"
+          label="CATEGORIES"
+          value={loading ? '…' : String(new Set(templates.map((t) => t.category)).size)}
+          detail="Distinct prompt categories"
         />
       </div>
 
@@ -207,7 +135,7 @@ export function OracleView() {
         <div className="card-heading" style={{ marginBottom: '18px', alignItems: 'flex-start' }}>
           <div>
             <p className="eyebrow" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span>✦</span> ORACLE CONFIGURATION MATRIX
+              <span>✦</span> ORACLE PROMPTS
             </p>
             <h2 style={{ fontSize: '18px', fontWeight: 700, margin: '2px 0 4px', color: 'var(--text-main)' }}>
               တုံ့ပြန်မှု ပုံစံခွက်များနှင့် လမ်းညွှန်ချက် စည်းမျဉ်းများ
@@ -241,6 +169,11 @@ export function OracleView() {
         </div>
 
         <div style={{ display: 'grid', gap: '12px' }}>
+          {!loading && filtered.length === 0 ? (
+            <p style={{ margin: 0, fontSize: 13, color: 'var(--text-muted)' }}>
+              No prompts in this category.
+            </p>
+          ) : null}
           {filtered.map((t) => (
             <div
               key={t.id}
@@ -293,9 +226,7 @@ export function OracleView() {
           <div className="modal-backdrop" onClick={() => !saving && closeFormModal()} />
           <div className="modal-content" style={{ maxWidth: '720px' }}>
             <div className="modal-header">
-              <h2 id="oracle-prompt-modal-title">
-                {creating ? '＋ Template အသစ်' : 'Prompt ပြင်ဆင်ခြင်း'}
-              </h2>
+              <h2 id="oracle-prompt-modal-title">Prompt ပြင်ဆင်ခြင်း</h2>
               <button
                 type="button"
                 className="modal-close-btn"
@@ -368,23 +299,6 @@ export function OracleView() {
           </div>
         </div>
       ) : null}
-
-      <Card className="resource-card">
-        <h3 style={{ marginTop: 0 }}>Playground (local simulate)</h3>
-        <textarea
-          rows={3}
-          value={testQuery}
-          onChange={(e) => setTestQuery(e.target.value)}
-          placeholder="စမ်းသပ်မေးခွန်း..."
-          style={{ width: '100%', marginBottom: 8 }}
-        />
-        <Button variant="jade" onClick={handleRunSimulation} disabled={simulating}>
-          {simulating ? 'စမ်းသပ်နေသည်…' : 'Simulate'}
-        </Button>
-        {testOutput ? (
-          <pre style={{ whiteSpace: 'pre-wrap', marginTop: 12, fontSize: 13 }}>{testOutput}</pre>
-        ) : null}
-      </Card>
     </div>
   );
 }
