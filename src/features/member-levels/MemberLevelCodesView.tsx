@@ -39,7 +39,6 @@ export function MemberLevelCodesView({ initialMemberLevelId }: MemberLevelCodesV
   const [genLevelId, setGenLevelId] = useState<number | undefined>(initialMemberLevelId);
   const [genCount, setGenCount] = useState<number>(10);
   const [genPrefix, setGenPrefix] = useState<string>('AKN-');
-  const [genExpiryDays, setGenExpiryDays] = useState<number>(30);
   const [singleCodeInput, setSingleCodeInput] = useState<string>('');
   const [generating, setGenerating] = useState<boolean>(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
@@ -140,12 +139,17 @@ export function MemberLevelCodesView({ initialMemberLevelId }: MemberLevelCodesV
     setGenerationError(null);
 
     try {
+      const selectedTier = levels.find((l) => l.id === genLevelId);
+      const tierDays = selectedTier?.durationDays && selectedTier.durationDays > 0
+        ? selectedTier.durationDays
+        : undefined;
+
       if (generateTab === 'bulk') {
         const payload: MemberLevelCodeBulkGenerateRequest = {
           memberLevelId: genLevelId,
           count: genCount,
           prefix: genPrefix.trim().toUpperCase(),
-          expiryDays: genExpiryDays > 0 ? genExpiryDays : undefined,
+          expiryDays: tierDays,
         };
         const created = await memberLevelsCodeService.bulkGenerate(payload);
         showToast(`ကုဒ် ${created.length} ခု အောင်မြင်စွာ ထုတ်ဝေပြီးပါပြီ။`, 'success');
@@ -153,8 +157,8 @@ export function MemberLevelCodesView({ initialMemberLevelId }: MemberLevelCodesV
         const payload: MemberLevelCodeRequest = {
           memberLevelId: genLevelId,
           code: singleCodeInput.trim() ? singleCodeInput.trim().toUpperCase() : undefined,
-          expiredAt: genExpiryDays > 0
-            ? new Date(Date.now() + genExpiryDays * 24 * 60 * 60 * 1000).toISOString()
+          expiredAt: tierDays
+            ? new Date(Date.now() + tierDays * 24 * 60 * 60 * 1000).toISOString()
             : undefined,
         };
         await memberLevelsCodeService.create(payload);
@@ -634,21 +638,15 @@ export function MemberLevelCodesView({ initialMemberLevelId }: MemberLevelCodesV
                     </div>
                   </div>
 
-                  <div className="form-group">
-                    <label htmlFor="gen-modal-expiry">သက်တမ်း ကုန်ဆုံးမည့် ရက်ပေါင်း (Validity Days)</label>
-                    <input
-                      id="gen-modal-expiry"
-                      type="number"
-                      min="1"
-                      value={genExpiryDays}
-                      onChange={(e) => setGenExpiryDays(parseInt(e.target.value) || 0)}
-                      placeholder="30"
-                      className="form-input"
-                    />
-                    <small className="form-hint">
-                      သတ်မှတ်ထားသော ရက်ကျော်လွန်ပါက ကုဒ်သည် Expired အဖြစ် ပြောင်းလဲသွားပါမည်။
-                    </small>
-                  </div>
+                  {genLevelId ? (
+                    <p className="form-hint" style={{ marginTop: 4 }}>
+                      သက်တမ်း — ရွေးထားသော User Tier အတိုင်း (
+                      {levels.find((l) => l.id === genLevelId)?.durationDays
+                        ? `${levels.find((l) => l.id === genLevelId)?.durationDays} ရက်`
+                        : 'အကန့်အသတ်မဲ့'}
+                      )
+                    </p>
+                  ) : null}
                 </>
               ) : (
                 <>
@@ -667,18 +665,15 @@ export function MemberLevelCodesView({ initialMemberLevelId }: MemberLevelCodesV
                     </small>
                   </div>
 
-                  <div className="form-group">
-                    <label htmlFor="gen-single-expiry">သက်တမ်း ကုန်ဆုံးမည့် ရက်ပေါင်း (Validity Days)</label>
-                    <input
-                      id="gen-single-expiry"
-                      type="number"
-                      min="1"
-                      value={genExpiryDays}
-                      onChange={(e) => setGenExpiryDays(parseInt(e.target.value) || 0)}
-                      placeholder="30"
-                      className="form-input"
-                    />
-                  </div>
+                  {genLevelId ? (
+                    <p className="form-hint">
+                      သက်တမ်း — ရွေးထားသော User Tier အတိုင်း (
+                      {levels.find((l) => l.id === genLevelId)?.durationDays
+                        ? `${levels.find((l) => l.id === genLevelId)?.durationDays} ရက်`
+                        : 'အကန့်အသတ်မဲ့'}
+                      )
+                    </p>
+                  ) : null}
                 </>
               )}
 

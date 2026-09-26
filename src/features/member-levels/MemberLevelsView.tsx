@@ -36,7 +36,6 @@ export function MemberLevelsView({ onNavigateToCodes }: MemberLevelsViewProps) {
   // Quick code generation modal state
   const [genCount, setGenCount] = useState(10);
   const [genPrefix, setGenPrefix] = useState('AKN-');
-  const [genExpiryDays, setGenExpiryDays] = useState(30);
   const [generating, setGenerating] = useState(false);
 
   const fetchLevels = async () => {
@@ -144,7 +143,9 @@ export function MemberLevelsView({ onNavigateToCodes }: MemberLevelsViewProps) {
         memberLevelId: codeGenLevel.id,
         count: genCount,
         prefix: genPrefix.trim().toUpperCase(),
-        expiryDays: genExpiryDays > 0 ? genExpiryDays : undefined,
+        expiryDays: codeGenLevel.durationDays && codeGenLevel.durationDays > 0
+          ? codeGenLevel.durationDays
+          : undefined,
       });
       showToast(`အဆင့် "${codeGenLevel.name}" အတွက် ကုဒ် ${generated.length} ခု အောင်မြင်စွာ ထုတ်ပြီးပါပြီ။`, 'success');
       setCodeGenLevel(null);
@@ -316,7 +317,6 @@ export function MemberLevelsView({ onNavigateToCodes }: MemberLevelsViewProps) {
                           onClick={() => {
                             setCodeGenLevel(level);
                             setGenPrefix(level.name.slice(0, 3).toUpperCase() + '-');
-                            setGenExpiryDays(level.durationDays || 30);
                           }}
                           title="Issue user codes for this tier"
                           aria-label={`Issue user codes for ${level.name}`}
@@ -607,21 +607,11 @@ export function MemberLevelsView({ onNavigateToCodes }: MemberLevelsViewProps) {
                 </div>
               </div>
 
-              <div className="form-group">
-                <label htmlFor="gen-expiry">ကုဒ် သက်တမ်း ကုန်ဆုံးမည့် ရက်ပေါင်း (Expiry Days)</label>
-                <input
-                  id="gen-expiry"
-                  type="number"
-                  min="1"
-                  value={genExpiryDays}
-                  onChange={(e) => setGenExpiryDays(parseInt(e.target.value) || 0)}
-                  placeholder="30"
-                  className="form-input"
-                />
-                <small className="form-hint">
-                  မထည့်သွင်းပါက အဆင့်သတ်မှတ်ချက်အတိုင်း ({codeGenLevel.durationDays || 30} ရက်) သက်တမ်းရှိမည်။
-                </small>
-              </div>
+              <p className="form-hint">
+                သက်တမ်း — User Tier အတိုင်း (
+                {codeGenLevel.durationDays ? `${codeGenLevel.durationDays} ရက်` : 'အကန့်အသတ်မဲ့'}
+                )
+              </p>
 
               <div className="modal-footer">
                 <Button
