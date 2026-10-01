@@ -9,6 +9,7 @@ import type {
   MemberLevelCodeBulkGenerateRequest,
   MemberLevelCodeRequest,
 } from './types/member-levels-code.types';
+import { downloadMemberLevelCodesExcel } from './utils/export-member-level-codes';
 
 interface MemberLevelCodesViewProps {
   initialMemberLevelId?: number;
@@ -50,6 +51,7 @@ export function MemberLevelCodesView({ initialMemberLevelId }: MemberLevelCodesV
 
   // Copied code tracker for animation
   const [copiedCodeId, setCopiedCodeId] = useState<number | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   // Load levels for dropdown
   useEffect(() => {
@@ -118,12 +120,57 @@ export function MemberLevelCodesView({ initialMemberLevelId }: MemberLevelCodesV
   // Copy all visible codes
   const handleCopyAllCodes = async () => {
     if (codes.length === 0) return;
-    const allText = codes.map((c) => c.code).join('\n');
     try {
-      await navigator.clipboard.writeText(allText);
-      showToast(`ကုဒ် ${codes.length} ခုလုံးကို ကူးယူပြီးပါပြီ။`, 'success');
+      await navigator.clipboard.writeText(codes.map((c) => c.code).join('\n'));
+      showToast(`မြင်ရသော ကုဒ် ${codes.length} ခုကို Clipboard သို့ ကူးယူပြီးပါပြီ။`, 'success');
     } catch {
       showToast('ကူးယူမှု မအောင်မြင်ပါ', 'error');
+    }
+  };
+
+  // Export filtered codes to Excel (Generated Date, Code, Level, Redeemed By, Status)
+  const handleExportExcel = async () => {
+    if (totalItems === 0) {
+      showToast('ထုတ်ယူရန် ကုဒ် မရှိပါ', 'info');
+      return;
+    }
+    setExporting(true);
+    try {
+      const pageSize = 200;
+      const all: MemberLevelCode[] = [];
+      let pageIndex = 0;
+      let pages = 1;
+      while (pageIndex < pages) {
+        const data = await memberLevelsCodeService.getAll({
+          page: pageIndex,
+          size: pageSize,
+          sortBy: 'id',
+          sortDirection: 'DESC',
+          filter: {
+            memberLevelId: selectedLevelId,
+            code: codeSearch.trim() || undefined,
+            status: statusFilter,
+          },
+        });
+        all.push(...(data.content || []));
+        pages = Math.max(1, data.totalPages || 1);
+        pageIndex += 1;
+        if (!(data.content || []).length) break;
+      }
+
+      const levelNameById = new Map(levels.map((l) => [l.id, l.name]));
+      const rows = all.map((code) => ({
+        ...code,
+        memberLevelName:
+          code.memberLevelName || levelNameById.get(code.memberLevelId) || String(code.memberLevelId),
+      }));
+
+      downloadMemberLevelCodesExcel(rows);
+      showToast(`Excel သို့ ကုဒ် ${rows.length} ခု ထုတ်ယူပြီးပါပြီ။`, 'success');
+    } catch (err: any) {
+      showToast(err.message || 'Excel ထုတ်ယူမှု မအောင်မြင်ပါ', 'error');
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -239,6 +286,16 @@ export function MemberLevelCodesView({ initialMemberLevelId }: MemberLevelCodesV
         description="Issue and manage activation codes that assign a user tier on first login."
         action={
           <div className="header-action-group">
+            {totalItems > 0 && (
+              <Button
+                onClick={handleExportExcel}
+                variant="ghost"
+                disabled={exporting}
+                aria-label="Export user codes to Excel"
+              >
+                {exporting ? 'Exporting…' : '⬇ Export Excel'}
+              </Button>
+            )}
             {codes.length > 0 && (
               <Button onClick={handleCopyAllCodes} variant="ghost" aria-label="Copy all visible codes">
                 📋 Copy All
